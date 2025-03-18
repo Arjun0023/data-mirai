@@ -41,7 +41,7 @@ function Home() {
       formData.append('file', file);
       formData.append('session_id', 'session123'); // Add session_id
   
-      const response = await fetch('http://127.0.0.1:8000/upload', {
+      const response = await fetch('http://127.0.0.1:8080/upload', {
         method: 'POST',
         body: formData,
       });
@@ -96,7 +96,7 @@ function Home() {
         formData.append('session_id', 'session123');
         
         // Make the API call with FormData
-        const response = await fetch('http://127.0.0.1:8000/ask', {
+        const response = await fetch('http://127.0.0.1:8080/ask', {
           method: 'POST',
           body: formData, // Use FormData instead of JSON
         });
@@ -106,6 +106,7 @@ function Home() {
         }
         
         const data = await response.json();
+        console.log('Query data:', data);
         const formattedResult = {
           original: data,
           formatted: Object.entries(data.result).map(([name, value]) => ({
@@ -155,7 +156,7 @@ function Home() {
   // New function to fetch summary
   const fetchSummary = async (question, resultData) => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/summarize', {
+      const response = await fetch('http://127.0.0.1:8080/summarize', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -171,6 +172,7 @@ function Home() {
       }
       
       const data = await response.json();
+      console.log('Summary data:', data);
       return data.summary; // Return the summary instead of setting state
       
     } catch (error) {

@@ -16,7 +16,7 @@ function Home() {
   const [uploadedFileData, setUploadedFileData] = useState(null)
   const [inputDisabled, setInputDisabled] = useState(true)
   //const [resultData, setResultData] = useState(null)
-  const [displayMode, setDisplayMode] = useState('barchart') // 'barchart', 'piechart', or 'table'
+  const [displayMode, setDisplayMode] = useState('table') // 'barchart', 'piechart', or 'table'
   //const [summary, setSummary] = useState(null) // New state for summary
   const [allResults, setAllResults] = useState([])
   
@@ -271,64 +271,72 @@ function Home() {
   // Render visualization of results
   const renderResultItem = (result) => {
     if (!result || !result.resultData) return null;
-    if (Array.isArray(result.resultData.formatted) && result.resultData.formatted.length > 0 && typeof result.resultData.formatted[0] === 'object' && result.resultData.formatted[0].name !== undefined && result.resultData.formatted[0].value !== undefined) {
-      // Already in correct format, pass as is
-  } else {
-      // Transform single object into the expected format
-      const formattedData = Object.entries(result.resultData.formatted).map(([key, value]) => ({
-          name: key,
-          value: value
-      }));
-      result.resultData.formatted = formattedData;
-  }
-    return (
-      <div key={result.id} className={`p-6 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-white shadow-md'} w-full mb-8`}>
-        <div className="border-b pb-3 mb-4">
-          <h3 className="text-xl font-medium">"{result.question}"</h3>
-          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            {new Date(result.timestamp).toLocaleString()}
-          </p>
-        </div>
+    
+    // Function to flatten the data for the table
+    const prepareDataForTable = () => {
+      if (!Array.isArray(result.resultData.formatted)) {
+        return [];
+      }
       
-        <div className="flex justify-between items-center mb-4">
-          <h4 className="text-lg font-medium">Results</h4>
-          <div className="flex space-x-2">
-            <button 
-              onClick={() => setDisplayMode('barchart')}
-              className={`p-2 rounded ${displayMode === 'barchart' 
-                ? darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white' 
-                : darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'}`}
-              aria-label="Show as bar chart"
-            >
-              <BarChart size={20} />
-            </button>
-            <button 
-              onClick={() => setDisplayMode('piechart')}
-              className={`p-2 rounded ${displayMode === 'piechart' 
-                ? darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white' 
-                : darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'}`}
-              aria-label="Show as pie chart"
-            >
-              <PieChart size={20} />
-            </button>
-            <button 
-              onClick={() => setDisplayMode('table')}
-              className={`p-2 rounded ${displayMode === 'table' 
-                ? darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white' 
-                : darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'}`}
-              aria-label="Show as table"
-            >
-              <Table size={20} />
-            </button>
+      // Extract the data from the nested structure
+      const flattenedData = result.resultData.formatted.map(item => {
+        // If the item has a name-value structure with a nested object in value
+        if (item.name !== undefined && item.value !== undefined && typeof item.value === 'object') {
+          return item.value; // Return the nested object directly
+        }
+        return item; // Return as is if it doesn't match our expected structure
+      });
+      
+      return flattenedData;
+    };
+  
+    return (
+      <div key={result.id} className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-white shadow-md'} w-full mb-2`}>
+        <div className="border-b pb-0 mb-2">
+          <div className="flex justify-between items-start mb-1">
+            <div>
+              <h3 className="text-xl font-medium">"{result.question}"</h3>
+              <p className={`text-sm ml-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                {new Date(result.timestamp).toLocaleString()}
+              </p>
+            </div>
+            
+            <div className="flex space-x-2">
+              <button 
+                onClick={() => setDisplayMode('barchart')}
+                className={`p-2 rounded ${displayMode === 'barchart' 
+                  ? darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white' 
+                  : darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'}`}
+                aria-label="Show as bar chart"
+              >
+                <BarChart size={20} />
+              </button>
+              <button 
+                onClick={() => setDisplayMode('piechart')}
+                className={`p-2 rounded ${displayMode === 'piechart' 
+                  ? darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white' 
+                  : darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'}`}
+                aria-label="Show as pie chart"
+              >
+                <PieChart size={20} />
+              </button>
+              <button 
+                onClick={() => setDisplayMode('table')}
+                className={`p-2 rounded ${displayMode === 'table' 
+                  ? darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white' 
+                  : darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'}`}
+                aria-label="Show as table"
+              >
+                <Table size={20} />
+              </button>
+            </div>
           </div>
         </div>
         
-        {/* Modified layout with increased width and height */}
-        <div className={`flex flex-col lg:flex-row gap-4 w-full max-w-6xl mx-auto`}>
-          {/* Chart section with increased height */}
-          <div className={`h-96 ${result.summary ? 'lg:w-2/3' : 'w-full'}`}>
+        <div className={`flex flex-col lg:flex-row gap-2 w-full max-w-8xl mx-auto`}>
+          <div className={`h-110 ${result.summary ? 'lg:w-2/3' : 'w-full'}`}>
             {displayMode === 'barchart' && (
-             <BarChartComponent data={result.resultData.formatted} />
+              <BarChartComponent data={result.resultData.formatted} />
             )}
             
             {displayMode === 'piechart' && (
@@ -336,16 +344,18 @@ function Home() {
             )}
             
             {displayMode === 'table' && (
-             <TableComponent data={result.resultData.formatted} darkMode={darkMode} />
+              <TableComponent 
+                data={prepareDataForTable()}
+                darkMode={darkMode} 
+              />
             )}
           </div>
           
-          {/* Summary section with ReactMarkdown */}
           {result.summary && (
             <div className="lg:w-1/3">
-              <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700'} overflow-y-auto max-h-96`}>
-                <h4 className="font-medium mb-2 sticky top-0 bg-inherit pt-1 pb-2 border-b border-gray-600">Summary</h4>
-                <div className={`prose prose-sm max-w-none mt-2 ${darkMode ? 'prose-invert' : ''}`}>
+              <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700'} overflow-y-auto max-h-100`}>
+                <h4 className="font-medium mb-0 top-1 bg-inherit pt-0 pb-2 border-b border-gray-600">Summary</h4>
+                <div className={`prose prose-sm max-w-none mt-0 ${darkMode ? 'prose-invert' : ''}`}>
                   <ReactMarkdown>{result.summary}</ReactMarkdown>
                 </div>
               </div>
@@ -354,7 +364,7 @@ function Home() {
         </div>
         
         {result.resultData.original && result.resultData.original.code && (
-          <div className="mt-6">
+          <div className="mt-0">
             <details className={`${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <summary className="cursor-pointer font-medium">Show Code</summary>
               <pre className={`mt-2 p-3 rounded overflow-auto ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-800'} max-h-96`}>
@@ -462,26 +472,6 @@ function Home() {
     {allResults.map((result) => renderResultItem(result))}
   </div>
 )}
-              {/* Results visualization */}
-              {/* {resultData && !isProcessing && renderResults()} */}
-              
-              {/* Messages */}
-              {/* <div className="space-y-4">
-                {messages.map((msg) => (
-                  <div 
-                    key={msg.id} 
-                    className={`p-4 rounded-lg ${
-                      msg.sender === 'user' 
-                        ? darkMode ? 'bg-blue-900 ml-12' : 'bg-blue-100 ml-12' 
-                        : msg.sender === 'system'
-                          ? darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-100 border border-gray-300'
-                          : darkMode ? 'bg-gray-700 mr-12' : 'bg-white mr-12 shadow-sm'
-                    }`}
-                  >
-                    <p>{msg.text}</p>
-                  </div>
-                ))}
-              </div> */}
             </div>
           )}
         </div>
@@ -493,7 +483,7 @@ function Home() {
           {/* Message input area */}
           <div className={`flex items-end rounded-full border ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-white'}`}>
             {!uploadedFileData && (
-              <label className="p-3 cursor-pointer">
+              <label className="p-5 cursor-pointer">
                 <input
                   type="file"
                   className="hidden"
@@ -520,7 +510,7 @@ function Home() {
             
             <button 
               type="submit" 
-              className={`p-3 m-1 rounded-full ${
+              className={`p-4 m-1 rounded-full ${
                 message && !inputDisabled && !isProcessing
                   ? darkMode 
                     ? 'bg-blue-600 hover:bg-blue-700 text-white' 

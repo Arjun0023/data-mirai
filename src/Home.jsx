@@ -14,9 +14,10 @@ function Home() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [uploadedFileData, setUploadedFileData] = useState(null)
   const [inputDisabled, setInputDisabled] = useState(true)
-  const [resultData, setResultData] = useState(null)
+  //const [resultData, setResultData] = useState(null)
   const [displayMode, setDisplayMode] = useState('barchart') // 'barchart', 'piechart', or 'table'
-  const [summary, setSummary] = useState(null) // New state for summary
+  //const [summary, setSummary] = useState(null) // New state for summary
+  const [allResults, setAllResults] = useState([])
   
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#8dd1e1', '#a4de6c', '#d0ed57']
   
@@ -86,8 +87,7 @@ function Home() {
       
       setMessages([...messages, newMessage])
       setIsProcessing(true)
-      setResultData(null) // Clear previous results
-      setSummary(null) // Clear previous summary
+      // We don't clear previous results anymore
       
       try {
         // Create FormData object for the API call
@@ -106,13 +106,13 @@ function Home() {
         }
         
         const data = await response.json();
-        setResultData({
+        const formattedResult = {
           original: data,
           formatted: Object.entries(data.result).map(([name, value]) => ({
             name,
             value
           }))
-        });
+        };
         
         // Add AI response
         const aiResponse = {
@@ -123,7 +123,19 @@ function Home() {
         setMessages(prevMessages => [...prevMessages, aiResponse])
         
         // Make the additional API call to /summarize
-        await fetchSummary(message, data.result);
+        const summaryText = await fetchSummary(message, data.result);
+        
+        // Create a new result object with all relevant data
+        const newResult = {
+          id: Date.now(),
+          question: message,
+          resultData: formattedResult,
+          summary: summaryText,
+          timestamp: new Date().toISOString()
+        };
+        
+        // Add the new result to our results array
+        setAllResults(prevResults => [...prevResults, newResult]);
         
       } catch (error) {
         console.error('Error processing query:', error);
@@ -159,11 +171,11 @@ function Home() {
       }
       
       const data = await response.json();
-      setSummary(data.summary);
+      return data.summary; // Return the summary instead of setting state
       
     } catch (error) {
       console.error('Error fetching summary:', error);
-      // Optionally add an error message to the messages array
+      return "Error generating summary."; // Return an error message
     }
   };
   
@@ -254,13 +266,20 @@ function Home() {
   }
   
   // Render visualization of results
-  const renderResults = () => {
-    if (!resultData) return null;
+  const renderResultItem = (result) => {
+    if (!result || !result.resultData) return null;
     
     return (
-      <div className={`p-6 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-white shadow-md'} w-full`}>
+      <div key={result.id} className={`p-6 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-white shadow-md'} w-full mb-8`}>
+        <div className="border-b pb-3 mb-4">
+          <h3 className="text-xl font-medium">"{result.question}"</h3>
+          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            {new Date(result.timestamp).toLocaleString()}
+          </p>
+        </div>
+      
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-medium">Results</h3>
+          <h4 className="text-lg font-medium">Results</h4>
           <div className="flex space-x-2">
             <button 
               onClick={() => setDisplayMode('barchart')}
@@ -295,11 +314,11 @@ function Home() {
         {/* Modified layout with increased width and height */}
         <div className={`flex flex-col lg:flex-row gap-4 w-full max-w-6xl mx-auto`}>
           {/* Chart section with increased height */}
-          <div className={`h-96 ${summary ? 'lg:w-2/3' : 'w-full'}`}>
+          <div className={`h-96 ${result.summary ? 'lg:w-2/3' : 'w-full'}`}>
             {displayMode === 'barchart' && (
               <ResponsiveContainer width="100%" height="100%">
                 <RechartsBarChart
-                  data={resultData.formatted}
+                  data={result.resultData.formatted}
                   margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
@@ -316,7 +335,7 @@ function Home() {
               <ResponsiveContainer width="100%" height="100%">
                 <RechartsPieChart>
                   <Pie
-                    data={resultData.formatted}
+                    data={result.resultData.formatted}
                     cx="50%"
                     cy="50%"
                     labelLine={true}
@@ -325,7 +344,7 @@ function Home() {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {resultData.formatted.map((entry, index) => (
+                    {result.resultData.formatted.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -349,7 +368,7 @@ function Home() {
                     </tr>
                   </thead>
                   <tbody className={`divide-y ${darkMode ? 'divide-gray-600' : 'divide-gray-200'}`}>
-                    {resultData.formatted.map((item, index) => (
+                    {result.resultData.formatted.map((item, index) => (
                       <tr key={index} className={index % 2 === 0 ? (darkMode ? 'bg-gray-800' : 'bg-gray-50') : ''}>
                         <td className="px-4 py-3 text-sm font-medium">{item.name}</td>
                         <td className="px-4 py-3 text-sm text-right">{new Intl.NumberFormat().format(item.value)}</td>
@@ -362,24 +381,24 @@ function Home() {
           </div>
           
           {/* Summary section with ReactMarkdown */}
-          {summary && (
+          {result.summary && (
             <div className="lg:w-1/3">
               <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700'} overflow-y-auto max-h-96`}>
                 <h4 className="font-medium mb-2 sticky top-0 bg-inherit pt-1 pb-2 border-b border-gray-600">Summary</h4>
                 <div className={`prose prose-sm max-w-none mt-2 ${darkMode ? 'prose-invert' : ''}`}>
-                  <ReactMarkdown>{summary}</ReactMarkdown>
+                  <ReactMarkdown>{result.summary}</ReactMarkdown>
                 </div>
               </div>
             </div>
           )}
         </div>
         
-        {resultData.original && resultData.original.code && (
+        {result.resultData.original && result.resultData.original.code && (
           <div className="mt-6">
             <details className={`${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <summary className="cursor-pointer font-medium">Show Code</summary>
               <pre className={`mt-2 p-3 rounded overflow-auto ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-800'} max-h-96`}>
-                <code>{resultData.original.code}</code>
+                <code>{result.resultData.original.code}</code>
               </pre>
             </details>
           </div>
@@ -465,22 +484,26 @@ function Home() {
           ) : (
             <div className="space-y-4">
               {/* Show file info only if not showing results */}
-              {uploadedFileData && !isProcessing && !resultData && (
-                <div className="transition-all duration-300 ease-in-out">
-                  {renderFileInfo()}
-                </div>
-              )}
+              {uploadedFileData && !isProcessing && allResults.length === 0 && (
+  <div className="transition-all duration-300 ease-in-out">
+    {renderFileInfo()}
+  </div>
+)}
               
               {/* Loading spinner during processing */}
               {isProcessing && (
-                <div className="flex flex-col items-center justify-center py-10">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-                  <p className="text-lg font-medium">Analyzing your data...</p>
-                </div>
-              )}
-              
+  <div className="flex flex-col items-center justify-center py-10">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+    <p className="text-lg font-medium">Analyzing your data...</p>
+  </div>
+)}
+{allResults.length > 0 && !isProcessing && (
+  <div className="space-y-8">
+    {allResults.map((result) => renderResultItem(result))}
+  </div>
+)}
               {/* Results visualization */}
-              {resultData && !isProcessing && renderResults()}
+              {/* {resultData && !isProcessing && renderResults()} */}
               
               {/* Messages */}
               {/* <div className="space-y-4">

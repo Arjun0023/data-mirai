@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Paperclip, Sun, Moon, Send, Upload, BarChart, PieChart, Table } from 'lucide-react'
-import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell } from 'recharts'
 import ReactMarkdown from "react-markdown";
-
+import BarChartComponent from './BarChartComponent'; // Import
+import PieChartComponent from './PieChartComponent'; // Import
+import TableComponent from './TableComponent'; // Import
 
 function Home() {
   const [darkMode, setDarkMode] = useState(false)
@@ -270,7 +271,16 @@ function Home() {
   // Render visualization of results
   const renderResultItem = (result) => {
     if (!result || !result.resultData) return null;
-    
+    if (Array.isArray(result.resultData.formatted) && result.resultData.formatted.length > 0 && typeof result.resultData.formatted[0] === 'object' && result.resultData.formatted[0].name !== undefined && result.resultData.formatted[0].value !== undefined) {
+      // Already in correct format, pass as is
+  } else {
+      // Transform single object into the expected format
+      const formattedData = Object.entries(result.resultData.formatted).map(([key, value]) => ({
+          name: key,
+          value: value
+      }));
+      result.resultData.formatted = formattedData;
+  }
     return (
       <div key={result.id} className={`p-6 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-white shadow-md'} w-full mb-8`}>
         <div className="border-b pb-3 mb-4">
@@ -318,67 +328,15 @@ function Home() {
           {/* Chart section with increased height */}
           <div className={`h-96 ${result.summary ? 'lg:w-2/3' : 'w-full'}`}>
             {displayMode === 'barchart' && (
-              <ResponsiveContainer width="100%" height="100%">
-                <RechartsBarChart
-                  data={result.resultData.formatted}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="value" fill="#8884d8" name="Quantity Ordered" />
-                </RechartsBarChart>
-              </ResponsiveContainer>
+             <BarChartComponent data={result.resultData.formatted} />
             )}
             
             {displayMode === 'piechart' && (
-              <ResponsiveContainer width="100%" height="100%">
-                <RechartsPieChart>
-                  <Pie
-                    data={result.resultData.formatted}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={true}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {result.resultData.formatted.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => new Intl.NumberFormat().format(value)} />
-                  <Legend />
-                </RechartsPieChart>
-              </ResponsiveContainer>
+              <PieChartComponent data={result.resultData.formatted} colors={COLORS} />
             )}
             
             {displayMode === 'table' && (
-              <div className={`overflow-auto ${darkMode ? 'text-white' : 'text-gray-800'}`} style={{ maxHeight: "100%" }}>
-                <table className={`min-w-full divide-y ${darkMode ? 'divide-gray-600' : 'divide-gray-200'}`}>
-                  <thead>
-                    <tr>
-                      <th className={`px-4 py-3 text-left text-xs font-medium ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-50 text-gray-500'} uppercase tracking-wider`}>
-                        Category
-                      </th>
-                      <th className={`px-4 py-3 text-right text-xs font-medium ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-50 text-gray-500'} uppercase tracking-wider`}>
-                        Value
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className={`divide-y ${darkMode ? 'divide-gray-600' : 'divide-gray-200'}`}>
-                    {result.resultData.formatted.map((item, index) => (
-                      <tr key={index} className={index % 2 === 0 ? (darkMode ? 'bg-gray-800' : 'bg-gray-50') : ''}>
-                        <td className="px-4 py-3 text-sm font-medium">{item.name}</td>
-                        <td className="px-4 py-3 text-sm text-right">{new Intl.NumberFormat().format(item.value)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+             <TableComponent data={result.resultData.formatted} darkMode={darkMode} />
             )}
           </div>
           

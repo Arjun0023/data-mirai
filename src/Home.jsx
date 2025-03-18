@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import { Paperclip, Sun, Moon, Send, Upload, BarChart, PieChart, Table } from 'lucide-react'
+import { Paperclip, Sun, Moon, Send, Upload, BarChart, PieChart, Table, BookmarkPlus, Layout } from 'lucide-react'
 import ReactMarkdown from "react-markdown";
-import BarChartComponent from './BarChartComponent'; // Import
-import PieChartComponent from './PieChartComponent'; // Import
-import TableComponent from './TableComponent'; // Import
+import { useNavigate } from 'react-router-dom'; // Import for navigation
+import BarChartComponent from './BarChartComponent';
+import PieChartComponent from './PieChartComponent';
+import TableComponent from './TableComponent';
 
 function Home() {
+  const navigate = useNavigate(); // Initialize navigation
   const [darkMode, setDarkMode] = useState(false)
   const [message, setMessage] = useState('')
   const [selectedFile, setSelectedFile] = useState(null)
@@ -15,12 +17,24 @@ function Home() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [uploadedFileData, setUploadedFileData] = useState(null)
   const [inputDisabled, setInputDisabled] = useState(true)
-  //const [resultData, setResultData] = useState(null)
   const [displayMode, setDisplayMode] = useState('table') // 'barchart', 'piechart', or 'table'
-  //const [summary, setSummary] = useState(null) // New state for summary
   const [allResults, setAllResults] = useState([])
+  const [savedCharts, setSavedCharts] = useState([]) // New state for saved charts
   
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#8dd1e1', '#a4de6c', '#d0ed57']
+  
+  // Load saved charts from localStorage on component mount
+  useEffect(() => {
+    const savedChartsData = localStorage.getItem('savedCharts');
+    if (savedChartsData) {
+      setSavedCharts(JSON.parse(savedChartsData));
+    }
+  }, []);
+
+  // Save charts to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('savedCharts', JSON.stringify(savedCharts));
+  }, [savedCharts]);
   
   const toggleDarkMode = () => {
     setDarkMode(!darkMode)
@@ -88,7 +102,6 @@ function Home() {
       
       setMessages([...messages, newMessage])
       setIsProcessing(true)
-      // We don't clear previous results anymore
       
       try {
         // Create FormData object for the API call
@@ -99,7 +112,7 @@ function Home() {
         // Make the API call with FormData
         const response = await fetch('http://127.0.0.1:8080/ask', {
           method: 'POST',
-          body: formData, // Use FormData instead of JSON
+          body: formData,
         });
         
         if (!response.ok) {
@@ -133,7 +146,8 @@ function Home() {
           question: message,
           resultData: formattedResult,
           summary: summaryText,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          displayMode: displayMode // Store current display mode
         };
         
         // Add the new result to our results array
@@ -174,12 +188,43 @@ function Home() {
       
       const data = await response.json();
       console.log('Summary data:', data);
-      return data.summary; // Return the summary instead of setting state
+      return data.summary;
       
     } catch (error) {
       console.error('Error fetching summary:', error);
-      return "Error generating summary."; // Return an error message
+      return "Error generating summary.";
     }
+  };
+  
+  // New function to save chart to dashboard
+  const saveChartToDashboard = (result) => {
+    // Create a saved chart object with the structure expected by Dashboard
+    const savedChart = {
+      id: `saved-${Date.now()}`,
+      title: result.question,
+      description: result.summary,
+      data: result.resultData,
+      displayMode: result.displayMode || displayMode,
+      generatedAt: new Date().toISOString()
+    };
+    
+    // Add to saved charts state
+    setSavedCharts(prev => [...prev, savedChart]);
+    
+    // Show a message
+    const saveMessage = {
+      id: Date.now(),
+      text: `Chart "${result.question}" saved to dashboard`,
+      sender: 'system',
+    };
+    setMessages(prev => [...prev, saveMessage]);
+  };
+  useEffect(() => {
+    localStorage.setItem('savedCharts', JSON.stringify(savedCharts));
+  }, [savedCharts]);
+  // Check if a chart is already saved
+  const isChartSaved = (resultId) => {
+    return savedCharts.some(chart => chart.originalId === resultId);
   };
   
   const handleDragOver = (e) => {
@@ -201,6 +246,11 @@ function Home() {
       await uploadFile(file)
     }
   }
+  
+  // Navigate to dashboard
+  const goToDashboard = () => {
+    navigate('/dashboard');
+  };
   
   // Render file data information
   const renderFileInfo = () => {
@@ -289,6 +339,9 @@ function Home() {
       
       return flattenedData;
     };
+    
+    // Determine if this chart is already saved
+    const isSaved = isChartSaved(result.id);
   
     return (
       <div key={result.id} className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-white shadow-md'} w-full mb-2`}>
@@ -328,6 +381,16 @@ function Home() {
                 aria-label="Show as table"
               >
                 <Table size={20} />
+              </button>
+              <button 
+                onClick={() => saveChartToDashboard(result)}
+                disabled={isSaved}
+                className={`p-2 rounded ${isSaved 
+                  ? darkMode ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                  : darkMode ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-green-500 hover:bg-green-600 text-white'}`}
+                aria-label="Save to dashboard"
+              >
+                <BookmarkPlus size={20} />
               </button>
             </div>
           </div>
@@ -381,7 +444,25 @@ function Home() {
     <div className={`flex flex-col h-screen transition-colors duration-200 ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'}`}>
       {/* Header */}
       <header className={`flex justify-between items-center p-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-        <h1 className="text-2xl font-semibold">AI Assistant</h1>
+        <div className="flex items-center">
+          <h1 className="text-2xl font-semibold">AI Assistant</h1>
+          <button 
+            onClick={goToDashboard}
+            className={`ml-6 px-4 py-2 rounded flex items-center ${
+              darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'
+            }`}
+          >
+            <Layout size={18} className="mr-2" />
+            Dashboard
+            {savedCharts.length > 0 && (
+              <span className={`ml-2 px-2 py-1 text-xs rounded-full ${
+                darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
+              }`}>
+                {savedCharts.length}
+              </span>
+            )}
+          </button>
+        </div>
         <button 
           onClick={toggleDarkMode} 
           className={`p-2 rounded-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'}`}
@@ -455,23 +536,24 @@ function Home() {
             <div className="space-y-4">
               {/* Show file info only if not showing results */}
               {uploadedFileData && !isProcessing && allResults.length === 0 && (
-  <div className="transition-all duration-300 ease-in-out">
-    {renderFileInfo()}
-  </div>
-)}
+                <div className="transition-all duration-300 ease-in-out">
+                  {renderFileInfo()}
+                </div>
+              )}
               
               {/* Loading spinner during processing */}
               {isProcessing && (
-  <div className="flex flex-col items-center justify-center py-10">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-    <p className="text-lg font-medium">Analyzing your data...</p>
-  </div>
-)}
-{allResults.length > 0 && !isProcessing && (
-  <div className="space-y-8">
-    {allResults.map((result) => renderResultItem(result))}
-  </div>
-)}
+                <div className="flex flex-col items-center justify-center py-10">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+                  <p className="text-lg font-medium">Analyzing your data...</p>
+                </div>
+              )}
+              
+              {allResults.length > 0 && !isProcessing && (
+                <div className="space-y-8">
+                  {allResults.map((result) => renderResultItem(result))}
+                </div>
+              )}
             </div>
           )}
         </div>

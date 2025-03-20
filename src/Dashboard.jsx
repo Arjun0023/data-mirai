@@ -1,11 +1,158 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Sun, Moon, Trash2, BarChart, PieChart, Table, Download } from 'lucide-react';
+import { ArrowLeft, Sun, Moon, Trash2, BarChart, PieChart, Table, Download, Move } from 'lucide-react';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import BarChartComponent from './BarChartComponent';
 import PieChartComponent from './PieChartComponent';
 import TableComponent from './TableComponent';
 import ReactMarkdown from "react-markdown";
 import domtoimage from 'dom-to-image';
+
+// Define drag type
+const CHART_ITEM = 'chart';
+
+// Chart Card Component with Drag and Drop
+const ChartCard = ({ chart, index, moveChart, changeChartDisplayMode, removeChart, chartDisplayModes, COLORS, darkMode, prepareDataForTable }) => {
+  const ref = useRef(null);
+  
+  // Set up drag source
+  const [{ isDragging }, drag] = useDrag({
+    type: CHART_ITEM,
+    item: () => ({ id: chart.id, index }),
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+  
+  // Set up drop target
+  const [, drop] = useDrop({
+    accept: CHART_ITEM,
+    hover: (draggedItem, monitor) => {
+      if (!ref.current) {
+        return;
+      }
+      
+      const dragIndex = draggedItem.index;
+      const hoverIndex = index;
+      
+      // Don't replace items with themselves
+      if (dragIndex === hoverIndex) {
+        return;
+      }
+      
+      // Get rectangle on screen
+      const hoverBoundingRect = ref.current.getBoundingClientRect();
+      
+      // Get vertical middle
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      
+      // Get mouse position
+      const clientOffset = monitor.getClientOffset();
+      
+      // Get pixels to the top
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+      
+      // Only perform the move when the mouse has crossed half of the items height
+      // When dragging downward, only move when the cursor is below 50%
+      // When dragging upward, only move when the cursor is above 50%
+      
+      // Dragging downward
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+        return;
+      }
+      
+      // Dragging upward
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+        return;
+      }
+      
+      // Time to actually perform the action
+      moveChart(dragIndex, hoverIndex);
+      
+      // Note: we're mutating the monitor item here!
+      // Generally it's better to avoid mutations,
+      // but it's good here for the sake of performance
+      // to avoid expensive index searches.
+      draggedItem.index = hoverIndex;
+    },
+  });
+  
+  // Initialize drag and drop ref (combine drag and drop refs)
+  drag(drop(ref));
+  
+  return (
+    <div 
+      ref={ref}
+      className={`rounded-lg p-4 shadow-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} ${isDragging ? 'opacity-50' : 'opacity-100'} transition-opacity duration-200`}
+      style={{ 
+        cursor: isDragging ? 'grabbing' : 'grab'
+      }}
+    >
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-2">
+          <Move size={16} className="text-gray-400" />
+          <h2 className="text-xl font-semibold">{chart.title || 'Untitled Chart'}</h2>
+        </div>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => changeChartDisplayMode(chart.id, 'barchart')}
+            className={`p-2 rounded ${chartDisplayModes[chart.id] === 'barchart' ? (darkMode ? 'bg-gray-700' : 'bg-gray-200') : ''}`}
+          >
+            <BarChart size={16} />
+          </button>
+          <button 
+            onClick={() => changeChartDisplayMode(chart.id, 'piechart')}
+            className={`p-2 rounded ${chartDisplayModes[chart.id] === 'piechart' ? (darkMode ? 'bg-gray-700' : 'bg-gray-200') : ''}`}
+          >
+            <PieChart size={16} />
+          </button>
+          <button 
+            onClick={() => changeChartDisplayMode(chart.id, 'table')}
+            className={`p-2 rounded ${chartDisplayModes[chart.id] === 'table' ? (darkMode ? 'bg-gray-700' : 'bg-gray-200') : ''}`}
+          >
+            <Table size={16} />
+          </button>
+          <button 
+            onClick={() => removeChart(chart.id)}
+            className={`p-2 rounded text-red-500 hover:${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </div>
+
+      <div className="h-64">
+        {chartDisplayModes[chart.id] === 'barchart' && (
+          <BarChartComponent 
+            data={chart.data.formatted || []} 
+            colors={COLORS} 
+            darkMode={darkMode}
+          />
+        )}
+        {chartDisplayModes[chart.id] === 'piechart' && (
+          <PieChartComponent 
+            data={chart.data.formatted || []} 
+            colors={COLORS} 
+            darkMode={darkMode}
+          />
+        )}
+        {chartDisplayModes[chart.id] === 'table' && (
+          <TableComponent 
+            data={prepareDataForTable(chart.data)} 
+            darkMode={darkMode}
+          />
+        )}
+      </div>
+
+      {chart.generatedAt && (
+        <div className={`mt-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+          Created: {new Date(chart.generatedAt).toLocaleString()}
+        </div>
+      )}
+    </div>
+  );
+};
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -61,6 +208,18 @@ function Dashboard() {
     setSavedCharts(savedCharts.map(chart => 
       chart.id === chartId ? { ...chart, displayMode: mode } : chart
     ));
+  };
+
+  // Function to move a chart from one position to another
+  const moveChart = (fromIndex, toIndex) => {
+    // Create a copy of the array to avoid direct mutation
+    const newCharts = [...savedCharts];
+    // Remove the chart at fromIndex and store it
+    const [movedChart] = newCharts.splice(fromIndex, 1);
+    // Insert the moved chart at toIndex
+    newCharts.splice(toIndex, 0, movedChart);
+    // Update state with the new order
+    setSavedCharts(newCharts);
   };
 
   // Function to flatten the data for the table
@@ -180,123 +339,74 @@ function Dashboard() {
   };
 
   return (
-    <div className={`flex flex-col min-h-screen transition-colors duration-200 ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'}`}>
-      {/* Header */}
-      <header className={`flex justify-between items-center p-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-        <button 
-          onClick={goBack} 
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
-        >
-          <ArrowLeft size={18} />
-          <span>Back</span>
-        </button>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className="flex items-center gap-2">
+    <DndProvider backend={HTML5Backend}>
+      <div className={`flex flex-col min-h-screen transition-colors duration-200 ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'}`}>
+        {/* Header */}
+        <header className={`flex justify-between items-center p-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
           <button 
-            onClick={saveDashboardAsImage} 
-            disabled={isSaving}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={goBack} 
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
           >
-            <Download size={18} />
-            <span>{isSaving ? 'Saving...' : 'Save as Image'}</span>
+            <ArrowLeft size={18} />
+            <span>Back</span>
           </button>
-          <button 
-            onClick={toggleDarkMode} 
-            className={`p-2 rounded-full ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
-          >
-            {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1 p-6" ref={dashboardRef}>
-        {savedCharts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full">
-            <p className="text-xl mb-4">No saved charts yet</p>
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <div className="flex items-center gap-2">
             <button 
-              onClick={goBack} 
-              className={`px-4 py-2 rounded-lg ${darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
+              onClick={saveDashboardAsImage} 
+              disabled={isSaving}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              Create a new chart
+              <Download size={18} />
+              <span>{isSaving ? 'Saving...' : 'Save as Image'}</span>
+            </button>
+            <button 
+              onClick={toggleDarkMode} 
+              className={`p-2 rounded-full ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
+            >
+              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {savedCharts.map((chart) => (
-              <div 
-                key={chart.id} 
-                className={`rounded-lg p-4 shadow-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1 p-6" ref={dashboardRef}>
+          {savedCharts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full">
+              <p className="text-xl mb-4">No saved charts yet</p>
+              <button 
+                onClick={goBack} 
+                className={`px-4 py-2 rounded-lg ${darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
               >
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">{chart.title || 'Untitled Chart'}</h2>
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => changeChartDisplayMode(chart.id, 'barchart')}
-                      className={`p-2 rounded ${chartDisplayModes[chart.id] === 'barchart' ? (darkMode ? 'bg-gray-700' : 'bg-gray-200') : ''}`}
-                    >
-                      <BarChart size={16} />
-                    </button>
-                    <button 
-                      onClick={() => changeChartDisplayMode(chart.id, 'piechart')}
-                      className={`p-2 rounded ${chartDisplayModes[chart.id] === 'piechart' ? (darkMode ? 'bg-gray-700' : 'bg-gray-200') : ''}`}
-                    >
-                      <PieChart size={16} />
-                    </button>
-                    <button 
-                      onClick={() => changeChartDisplayMode(chart.id, 'table')}
-                      className={`p-2 rounded ${chartDisplayModes[chart.id] === 'table' ? (darkMode ? 'bg-gray-700' : 'bg-gray-200') : ''}`}
-                    >
-                      <Table size={16} />
-                    </button>
-                    <button 
-                      onClick={() => removeChart(chart.id)}
-                      className={`p-2 rounded text-red-500 hover:${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
+                Create a new chart
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {savedCharts.map((chart, index) => (
+                <ChartCard
+                  key={chart.id}
+                  chart={chart}
+                  index={index}
+                  moveChart={moveChart}
+                  changeChartDisplayMode={changeChartDisplayMode}
+                  removeChart={removeChart}
+                  chartDisplayModes={chartDisplayModes}
+                  COLORS={COLORS}
+                  darkMode={darkMode}
+                  prepareDataForTable={prepareDataForTable}
+                />
+              ))}
+            </div>
+          )}
+        </main>
 
-                <div className="h-64">
-                  {chartDisplayModes[chart.id] === 'barchart' && (
-                    <BarChartComponent 
-                      data={chart.data.formatted || []} 
-                      colors={COLORS} 
-                      darkMode={darkMode}
-                    />
-                  )}
-                  {chartDisplayModes[chart.id] === 'piechart' && (
-                    <PieChartComponent 
-                      data={chart.data.formatted || []} 
-                      colors={COLORS} 
-                      darkMode={darkMode}
-                    />
-                  )}
-                  {chartDisplayModes[chart.id] === 'table' && (
-                    <TableComponent 
-                      data={prepareDataForTable(chart.data)} 
-                      darkMode={darkMode}
-                    />
-                  )}
-                </div>
-
-                {chart.generatedAt && (
-                  <div className={`mt-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    Created: {new Date(chart.generatedAt).toLocaleString()}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
-
-      {/* Footer */}
-      <footer className={`p-4 text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-        © {new Date().getFullYear()} Data Visualization Tool
-      </footer>
-    </div>
+        {/* Footer */}
+        <footer className={`p-4 text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+          © {new Date().getFullYear()} Data Visualization Tool
+        </footer>
+      </div>
+    </DndProvider>
   );
 }
 

@@ -87,23 +87,7 @@ function InputArea({
     <div className={`p-6 border-t ${darkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-white'}`}>
       <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
         {/* Language selector for voice recognition */}
-        <div className="mb-2 flex justify-center">
-          <select
-            className={`text-xs rounded-md px-2 py-1 ${darkMode 
-              ? 'bg-gray-700 text-gray-200 border border-gray-600' 
-              : 'bg-gray-100 text-gray-700 border border-gray-300'}`}
-            value={recognitionLanguage}
-            onChange={(e) => setRecognitionLanguage(e.target.value)}
-            disabled={isRecognizing}
-          >
-            {languageOptions.map(lang => (
-              <option key={lang.code} value={lang.code}>
-                {lang.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        
+
         {/* Message input area */}
         <div className={`flex items-end rounded-full border ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-white'}`}>
 
@@ -126,7 +110,7 @@ function InputArea({
               darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-white text-gray-800 placeholder-gray-400'
             } ${inputDisabled || isProcessing ? 'cursor-not-allowed' : ''}`}
             rows="1"
-            style={{ minHeight: '56px', maxHeight: '200px' }}
+            style={{ minHeight: '20px', maxHeight: '150px' }}
             disabled={inputDisabled || isProcessing}
           />
 
@@ -152,14 +136,31 @@ function InputArea({
           </button>
         </div>
 
-        <p className={`mt-3 text-sm text-center ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+        {/* <p className={`mt-3 text-sm text-center ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
           {isRecognizing 
             ? "Listening... Speak now." 
             : uploadedFileData
               ? "Ask questions about your data to get insights."
               : "Your files will be processed and analyzed. Maximum file size: 200MB."}
-        </p>
+        </p> */}
       </form>
+      <div className="mt-2 flex justify-center">
+          <select
+            className={`text-xs rounded-md px-2 py-1 ${darkMode 
+              ? 'bg-gray-700 text-gray-200 border border-gray-600' 
+              : 'bg-gray-100 text-gray-700 border border-gray-300'}`}
+            value={recognitionLanguage}
+            onChange={(e) => setRecognitionLanguage(e.target.value)}
+            disabled={isRecognizing}
+          >
+            {languageOptions.map(lang => (
+              <option key={lang.code} value={lang.code}>
+                {lang.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        
     </div>
   )
 }

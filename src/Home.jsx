@@ -448,15 +448,27 @@ console.log(languageOptions)
           </div>
 
           {result.summary && (
-            <div className="lg:w-1/3">
-              <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700'} overflow-y-auto max-h-110`}>
-                <h4 className="font-medium mb-0 top-1 bg-inherit pt-0 pb-2 border-b border-gray-600">Summary</h4>
-                <div className={`prose prose-sm max-w-none mt-0 ${darkMode ? 'prose-invert' : ''}`}>
-                  <ReactMarkdown>{result.summary}</ReactMarkdown>
-                </div>
-              </div>
-            </div>
-          )}
+  <div className="lg:w-1/3">
+    <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700'} overflow-y-auto max-h-110`}>
+      <h4 className="font-medium mb-0 top-1 bg-inherit pt-0 pb-2 border-b border-gray-600">Summary</h4>
+      <div className={`prose prose-headings:mt-4 prose-headings:mb-2 prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-sm max-w-none mt-0 ${darkMode ? 'prose-invert' : ''}`}>
+        <ReactMarkdown
+          components={{
+            h1: ({node, ...props}) => <h1 className="text-l font-bold my-0" {...props} />,
+            h2: ({node, ...props}) => <h2 className="text-l font-bold my-0" {...props} />,
+            h3: ({node, ...props}) => <h3 className="text-base font-semibold my-2" {...props} />,
+            p: ({node, ...props}) => <p className="my-2" {...props} />,
+            ul: ({node, ...props}) => <ul className="list-disc pl-5 my-2" {...props} />,
+            ol: ({node, ...props}) => <ol className="list-decimal pl-5 my-2" {...props} />,
+            li: ({node, ...props}) => <li className="ml-2" {...props} />
+          }}
+        >
+          {result.summary}
+        </ReactMarkdown>
+      </div>
+    </div>
+  </div>
+)}
         </div>
 
         {result.resultData.original && result.resultData.original.code && (

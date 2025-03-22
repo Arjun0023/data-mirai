@@ -1,16 +1,15 @@
-import React, { useState,useEffect } from 'react';
-import { Paperclip, Send, Mic, MicOff } from 'lucide-react';
-
+import React, { useState, useEffect } from 'react';
+import { Paperclip, Send, Mic, MicOff, Settings, CornerDownLeft ,Languages} from 'lucide-react';
 
 const languageOptions = [
-    {code:'en-IN', name:'Hinglish'},
-    { code: 'en-US', name: 'English' },
-    { code: 'hi-IN', name: 'Hindi' },
-    { code: 'mr-IN', name: 'Marathi' },
-    { code: 'ta-IN', name: 'Tamil' },
-    { code: 'te-IN', name: 'Telugu' },
-    { code: 'kn-IN', name: 'Kannada' }
-  ];
+  { code: 'en-IN', name: 'Hinglish' },
+  { code: 'en-US', name: 'English' },
+  { code: 'hi-IN', name: 'Hindi' },
+  { code: 'mr-IN', name: 'Marathi' },
+  { code: 'ta-IN', name: 'Tamil' },
+  { code: 'te-IN', name: 'Telugu' },
+  { code: 'kn-IN', name: 'Kannada' }
+];
 
 function InputArea({
   darkMode,
@@ -26,12 +25,16 @@ function InputArea({
 }) {
   const [isRecognizing, setIsRecognizing] = useState(false);
   const [recognitionLanguage, setRecognitionLanguage] = useState('en-US');
+  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
 
   // Language options for speech recognition
   useEffect(() => {
     // Call the callback to pass the options to the parent
-    onLanguageOptions(recognitionLanguage);
-  }, [recognitionLanguage]);
+    if (onLanguageOptions) {
+      onLanguageOptions(recognitionLanguage);
+    }
+  }, [recognitionLanguage, onLanguageOptions]);
+
   const startRecognition = () => {
     if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -83,86 +86,160 @@ function InputArea({
     }
   };
 
+  const toggleLanguageSelector = () => {
+    setShowLanguageSelector(!showLanguageSelector);
+  };
+
+  const handleKeyDown = (e) => {
+    // Submit on Enter (without Shift)
+    if (e.key === 'Enter' && !e.shiftKey && message.trim()) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
   return (
-    <div className={`p-6 border-t ${darkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-white'}`}>
-      <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
-        {/* Language selector for voice recognition */}
+    <div className={`border-t ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} py-4 px-4 sm:px-6`}>
+      <div className="max-w-4xl mx-auto">
+        <form onSubmit={handleSubmit} className="relative">
+          <div className={`rounded-xl overflow-hidden shadow-sm border ${darkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-300 bg-white'} transition-all duration-200 ${isRecognizing ? 'ring-2 ring-indigo-500' : ''}`}>
+            <div className="flex items-center w-full">
+              {/* Left side buttons container */}
+              <div className="flex items-center space-x-1 pl-3">
+                {/* Mic button */}
+                <button
+                  type="button"
+                  onClick={startRecognition}
+                  disabled={isProcessing || isRecognizing}
+                  className={`p-2 rounded-lg transition-colors ${
+                    isRecognizing
+                      ? darkMode
+                        ? 'text-red-400 bg-red-900/20' 
+                        : 'text-red-600 bg-red-50'
+                      : darkMode
+                        ? 'text-gray-400 hover:text-gray-300 hover:bg-gray-800' 
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                  }`}
+                  aria-label={isRecognizing ? "Stop recording" : "Start recording"}
+                >
+                  {isRecognizing ? <MicOff size={18} /> : <Mic size={18} />}
+                </button>
 
-        {/* Message input area */}
-        <div className={`flex items-end rounded-full border ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-white'}`}>
+                {/* Language settings */}
+                <button
+                  type="button"
+                  onClick={toggleLanguageSelector}
+                  disabled={isProcessing || isRecognizing}
+                  className={`p-2 rounded-lg transition-colors ${
+                    showLanguageSelector
+                      ? darkMode
+                        ? 'text-indigo-400 bg-indigo-900/20' 
+                        : 'text-indigo-600 bg-indigo-50'
+                      : darkMode
+                        ? 'text-gray-400 hover:text-gray-300 hover:bg-gray-800' 
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                  }`}
+                  aria-label="Language settings"
+                >
+                <Languages size={20}/>
+                
+                </button>
+              </div>
 
-          {/* Mic button */}
-          <button
-            type="button"
-            onClick={startRecognition}
-            disabled={isProcessing || isRecognizing}
-            className={`p-5 focus:outline-none ${isRecognizing ? 'text-red-500' : darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
-            aria-label={isRecognizing ? "Stop recording" : "Start recording"}
-          >
-            {isRecognizing ? <MicOff size={22} /> : <Mic size={22} />}
-          </button>
+              {/* Text input */}
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={inputDisabled ? "Upload a file to start..." : "Ask a question about your data..."}
+                className={`flex-1 resize-none py-3 px-3 outline-none text-base ${
+                  darkMode ? 'bg-gray-900 text-white placeholder-gray-500' : 'bg-white text-gray-800 placeholder-gray-400'
+                } ${inputDisabled || isProcessing ? 'cursor-not-allowed' : ''}`}
+                rows="1"
+                style={{ minHeight: '48px', maxHeight: '150px' }}
+                disabled={inputDisabled || isProcessing}
+              />
 
-          <textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder={inputDisabled ? "Upload a file to start..." : "Ask a question about your data..."}
-            className={`flex-1 resize-none p-4 text-lg outline-none rounded-full ${
-              darkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-white text-gray-800 placeholder-gray-400'
-            } ${inputDisabled || isProcessing ? 'cursor-not-allowed' : ''}`}
-            rows="1"
-            style={{ minHeight: '20px', maxHeight: '150px' }}
-            disabled={inputDisabled || isProcessing}
-          />
+              {/* Send button container */}
+              <div className="flex items-center pr-3">
+                <button
+                  type="submit"
+                  className={`p-2 rounded-lg flex items-center justify-center ${
+                    message && !inputDisabled && !isProcessing
+                      ? `${darkMode ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-500 hover:bg-indigo-600'} text-white`
+                      : `${darkMode ? 'bg-gray-800 text-gray-600' : 'bg-gray-100 text-gray-400'} cursor-not-allowed`
+                  } transition-colors`}
+                  disabled={!message || inputDisabled || isProcessing}
+                  aria-label="Send message"
+                >
+                  {isProcessing ? (
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-t-transparent border-white"></div>
+                  ) : (
+                    <CornerDownLeft size={18} />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
 
-          <button
-            type="submit"
-            className={`p-4 m-1 rounded-full ${
-              message && !inputDisabled && !isProcessing
-                ? darkMode
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'bg-blue-500 hover:bg-blue-600 text-white'
-                : darkMode
-                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            }`}
-            disabled={!message || inputDisabled || isProcessing}
-            aria-label="Send message"
-          >
-            {isProcessing ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-            ) : (
-              <Send size={22} />
-            )}
-          </button>
-        </div>
+          {/* Keyboard shortcut hint */}
+          <div className="flex justify-end">
+            <p className={`mt-1.5 text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+              Press Enter to send
+            </p>
+          </div>
+        </form>
 
-        {/* <p className={`mt-3 text-sm text-center ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-          {isRecognizing 
-            ? "Listening... Speak now." 
-            : uploadedFileData
-              ? "Ask questions about your data to get insights."
-              : "Your files will be processed and analyzed. Maximum file size: 200MB."}
-        </p> */}
-      </form>
-      <div className="mt-2 flex justify-center">
-          <select
-            className={`text-xs rounded-md px-2 py-1 ${darkMode 
-              ? 'bg-gray-700 text-gray-200 border border-gray-600' 
-              : 'bg-gray-100 text-gray-700 border border-gray-300'}`}
-            value={recognitionLanguage}
-            onChange={(e) => setRecognitionLanguage(e.target.value)}
-            disabled={isRecognizing}
-          >
-            {languageOptions.map(lang => (
-              <option key={lang.code} value={lang.code}>
-                {lang.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        
+        {/* Language selector popup */}
+        {showLanguageSelector && (
+          <div className={`mt-2 p-3 rounded-lg shadow-md border ${
+            darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
+          }`}>
+            <p className={`text-xs mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              Select voice recognition language:
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {languageOptions.map(lang => (
+                <button
+                  key={lang.code}
+                  className={`px-3 py-2 text-sm rounded-lg text-left transition-colors ${
+                    recognitionLanguage === lang.code
+                      ? darkMode
+                        ? 'bg-indigo-900/30 text-indigo-300 border border-indigo-800'
+                        : 'bg-indigo-50 text-indigo-700 border border-indigo-100'
+                      : darkMode
+                        ? 'hover:bg-gray-800 text-gray-300'
+                        : 'hover:bg-gray-100 text-gray-700'
+                  }`}
+                  onClick={() => {
+                    setRecognitionLanguage(lang.code);
+                    setShowLanguageSelector(false);
+                  }}
+                >
+                  {lang.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Status message */}
+        {isRecognizing && (
+          <div className={`mt-2 p-2 rounded-lg text-center ${
+            darkMode ? 'bg-indigo-900/20 text-indigo-300' : 'bg-indigo-50 text-indigo-700'
+          }`}>
+            <p className="text-sm flex items-center justify-center">
+              <span className="relative flex h-3 w-3 mr-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className={`relative inline-flex rounded-full h-3 w-3 ${darkMode ? 'bg-red-500' : 'bg-red-600'}`}></span>
+              </span>
+              Listening... Speak now in {languageOptions.find(l => l.code === recognitionLanguage)?.name || 'selected language'}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
-  )
+  );
 }
 
-export default InputArea
+export default InputArea;

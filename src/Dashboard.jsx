@@ -209,7 +209,7 @@ function Dashboard() {
   };
 
   const goBack = () => {
-    navigate('/home');
+    navigate('/ask');
   };
 
   const removeChart = (chartId) => {

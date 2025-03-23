@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Paperclip, Send, Mic, MicOff, Settings, CornerDownLeft ,Languages} from 'lucide-react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
+import { Paperclip, Send, Mic, MicOff, Settings, CornerDownLeft, Languages } from 'lucide-react';
 
 const languageOptions = [
   { code: 'en-IN', name: 'Hinglish' },
@@ -11,7 +11,8 @@ const languageOptions = [
   { code: 'kn-IN', name: 'Kannada' }
 ];
 
-function InputArea({
+// Use React.memo to prevent unnecessary re-renders
+const InputArea = memo(function InputArea({
   darkMode,
   message,
   setMessage,
@@ -21,7 +22,8 @@ function InputArea({
   handleFileChange,
   uploadedFileData,
   isUploading,
-  onLanguageOptions
+  onLanguageOptions,
+  customClasses
 }) {
   const [isRecognizing, setIsRecognizing] = useState(false);
   const [recognitionLanguage, setRecognitionLanguage] = useState('en-US');
@@ -35,7 +37,7 @@ function InputArea({
     }
   }, [recognitionLanguage, onLanguageOptions]);
 
-  const startRecognition = () => {
+  const startRecognition = useCallback(() => {
     if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
       recognition.continuous = false;
@@ -84,19 +86,28 @@ function InputArea({
       console.error('Speech recognition not supported in this browser.');
       alert('Speech recognition not supported in this browser.');
     }
-  };
+  }, [recognitionLanguage, setMessage]);
 
-  const toggleLanguageSelector = () => {
-    setShowLanguageSelector(!showLanguageSelector);
-  };
+  const toggleLanguageSelector = useCallback(() => {
+    setShowLanguageSelector(prev => !prev);
+  }, []);
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = useCallback((e) => {
     // Submit on Enter (without Shift)
     if (e.key === 'Enter' && !e.shiftKey && message.trim()) {
       e.preventDefault();
       handleSubmit(e);
     }
-  };
+  }, [message, handleSubmit]);
+
+  const handleTextChange = useCallback((e) => {
+    setMessage(e.target.value);
+  }, [setMessage]);
+
+  const handleLanguageSelect = useCallback((code) => {
+    setRecognitionLanguage(code);
+    setShowLanguageSelector(false);
+  }, []);
 
   return (
     <div className={`border-t ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} py-4 px-4 sm:px-6`}>
@@ -149,7 +160,7 @@ function InputArea({
               {/* Text input */}
               <textarea
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={handleTextChange}
                 onKeyDown={handleKeyDown}
                 placeholder={inputDisabled ? "Upload a file to start..." : "Ask a question about your data..."}
                 className={`flex-1 resize-none py-3 px-3 outline-none text-base ${
@@ -211,10 +222,7 @@ function InputArea({
                         ? 'hover:bg-gray-800 text-gray-300'
                         : 'hover:bg-gray-100 text-gray-700'
                   }`}
-                  onClick={() => {
-                    setRecognitionLanguage(lang.code);
-                    setShowLanguageSelector(false);
-                  }}
+                  onClick={() => handleLanguageSelect(lang.code)}
                 >
                   {lang.name}
                 </button>
@@ -240,6 +248,6 @@ function InputArea({
       </div>
     </div>
   );
-}
+});
 
 export default InputArea;

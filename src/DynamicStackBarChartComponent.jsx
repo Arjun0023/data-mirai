@@ -427,7 +427,7 @@ const DynamicStackedBarChartComponent = ({
               color: darkMode ? '#e5e7eb' : '#333'
             }}
           />
-          <Legend wrapperStyle={{ color: darkMode ? '#e5e7eb' : '#333' }} />
+          {/* <Legend wrapperStyle={{ color: darkMode ? '#e5e7eb' : '#333' }} /> */}
           {processedData.categories?.map((category, index) => (
             <Bar 
               key={category}

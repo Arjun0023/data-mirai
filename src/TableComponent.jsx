@@ -82,50 +82,65 @@ function TableComponent({ data, darkMode, maxHeight }) {
   return (
     <div 
       ref={tableRef} 
-      className={`w-full overflow-auto ${darkMode ? 'text-white' : 'text-gray-800'}`}
+      className={`w-full ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
       style={{ maxHeight: maxHeight || '100%' }}
     >
-      <table className={`w-full table-fixed border-collapse border ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
-        <thead className="sticky top-0 z-10">
-          <tr className={darkMode ? 'bg-gray-800' : 'bg-gray-100'}>
-            {columns.map((column, index) => (
-              <th
-                key={index}
-                className="px-2 py-2 text-left font-medium uppercase tracking-wider border border-gray-300 truncate"
-                style={{ 
-                  width: columnWidths[index] ? `${columnWidths[index]}px` : 'auto',
-                  fontSize: `${fontSize - 1}px`
-                }}
-                title={column.toUpperCase()}
-              >
-                {column.toUpperCase()}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row, rowIndex) => (
-            <tr key={rowIndex} className={rowIndex % 2 === 0 ? (darkMode ? 'bg-gray-700' : 'bg-gray-50') : ''}>
-              {columns.map((column, colIndex) => {
-                const cellValue = formatCellValue(row[column]);
-                return (
-                  <td 
-                    key={colIndex} 
-                    className="px-2 py-2 border border-gray-300 truncate"
+      <div className={`rounded-lg overflow-hidden border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 table-fixed">
+            <thead className={`sticky top-0 z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+              <tr>
+                {columns.map((column, index) => (
+                  <th
+                    key={index}
+                    scope="col"
+                    className={`px-3 py-2 text-left text-xs font-medium ${
+                      darkMode ? 'text-gray-400' : 'text-gray-500'
+                    } uppercase tracking-wider`}
                     style={{ 
-                      width: columnWidths[colIndex] ? `${columnWidths[colIndex]}px` : 'auto',
-                      fontSize: `${fontSize}px`
+                      width: columnWidths[index] ? `${columnWidths[index]}px` : 'auto'
                     }}
-                    title={cellValue} // Show full content on hover
+                    title={column.toUpperCase()}
                   >
-                    {cellValue}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                    {column.toUpperCase()}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
+              {data.map((row, rowIndex) => (
+                <tr 
+                  key={rowIndex} 
+                  className={`${
+                    rowIndex % 2 === 0 
+                      ? (darkMode ? 'bg-gray-800' : 'bg-white') 
+                      : (darkMode ? 'bg-gray-750' : 'bg-gray-50')
+                  } hover:${darkMode ? 'bg-gray-700' : 'bg-gray-100'} transition-colors`}
+                >
+                  {columns.map((column, colIndex) => {
+                    const cellValue = formatCellValue(row[column]);
+                    return (
+                      <td 
+                        key={colIndex} 
+                        className={`px-3 py-2 text-xs truncate ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                        style={{ 
+                          width: columnWidths[colIndex] ? `${columnWidths[colIndex]}px` : 'auto'
+                        }}
+                        title={cellValue} // Show full content on hover
+                      >
+                        {cellValue}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className={`p-2 text-center text-xs ${darkMode ? 'bg-gray-900 text-gray-400' : 'bg-gray-50 text-gray-500'}`}>
+          You can ask questions about this data using natural language
+        </div>
+      </div>
     </div>
   );
 }

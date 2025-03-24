@@ -312,7 +312,7 @@ const ManualMode = () => {
       fileInput.current.value = "";
     }
   };
-
+//
   const onGridReady = (params) => {
     setGridApi(params.api);
     setGridColumnApi(params.columnApi);

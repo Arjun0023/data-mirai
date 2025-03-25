@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { read, utils } from 'xlsx';
-import { FileText, Upload, Database, BarChart, HelpCircle, Moon, Sun, ArrowLeft, Download } from 'lucide-react';
+import { FileText, Upload, Database, BarChart, HelpCircle, Moon, Sun, ArrowLeft, Download, Plus, X } from 'lucide-react';
 
 // Import AG Grid styles - using only what's needed based on the theme
 import 'ag-grid-community/styles/ag-grid.css';
@@ -92,7 +92,7 @@ ModuleRegistry.registerModules([
 // Set license key
 LicenseManager.setLicenseKey("TRIAL]_this_{AG_Charts_and_AG_Grid}_Enterprise_key_{AG-076337}_is_granted_for_evaluation_only___Use_in_production_is_not_permitted___Please_report_misuse_to_legal@ag-grid.com___For_help_with_purchasing_a_production_key_please_contact_info@ag-grid.com___You_are_granted_a_{Single_Application}_Developer_License_for_one_application_only___All_Front-End_JavaScript_developers_working_on_the_application_would_need_to_be_licensed___This_key_will_deactivate_on_{14 March 2025}____[v3]_[0102]_MTc0MTkxMDQwMDAwMA==f7c8723db6b2e4c55a843f86bf24e52d");
 
-const Navbar = ({ darkMode, toggleDarkMode, isFileUploaded, fileDetails, resetFile }) => {
+const Navbar = ({ darkMode, toggleDarkMode, activeTab, tabs, switchTab, addTab, removeTab }) => { // Added removeTab
   return (
     <nav className={`px-6 py-3 border-b ${darkMode ? 'bg-gray-900 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-800'}`}>
       <div className="flex items-center justify-between">
@@ -101,58 +101,65 @@ const Navbar = ({ darkMode, toggleDarkMode, isFileUploaded, fileDetails, resetFi
             <Database className={`h-5 w-5 ${darkMode ? 'text-indigo-300' : 'text-indigo-600'}`} />
           </div>
           <h1 className="text-xl font-semibold">Data Explorer</h1>
-          
-          {isFileUploaded && fileDetails && (
-            <div className="flex items-center space-x-2">
-              <span className={`text-xs px-2 py-1 rounded-full ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                {fileDetails.filename}
-              </span>
-              <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                {fileDetails.rows.toLocaleString()} rows • {fileDetails.columns} columns
-              </span>
-            </div>
-          )}
         </div>
+
         <div className="flex items-center space-x-4">
-          {isFileUploaded && (
-            <>
-              <button 
-                className={`flex items-center space-x-1 text-sm py-1 px-3 rounded-lg ${
-                  darkMode 
-                    ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' 
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                } transition-colors`}
-                onClick={resetFile}
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span>Upload New</span>
-              </button>
-              <button 
-                className={`flex items-center space-x-1 text-sm py-1 px-3 rounded-lg ${
-                  darkMode 
-                    ? 'bg-indigo-700 hover:bg-indigo-600 text-white' 
-                    : 'bg-indigo-500 hover:bg-indigo-600 text-white'
-                } transition-colors`}
-              >
-                <Download className="h-4 w-4" />
-                <span>Export</span>
-              </button>
-            </>
-          )}
-          <button 
+          <button
             className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
             onClick={toggleDarkMode}
             title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
           >
             {darkMode ? <Sun className="h-5 w-5 text-gray-300" /> : <Moon className="h-5 w-5 text-gray-600" />}
           </button>
-          <button 
+          <button
             className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
             title="Help"
           >
             <HelpCircle className={`h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
           </button>
         </div>
+      </div>
+
+      {/* Tab Interface */}
+      <div className="mt-3 flex items-center space-x-2 overflow-x-auto">
+        {tabs.map((tab, index) => (
+          <div
+            key={tab.id}
+            className="relative"
+            onMouseEnter={(e) => {e.currentTarget.querySelector('.remove-tab-button').classList.remove('hidden')}}
+            onMouseLeave={(e) => {e.currentTarget.querySelector('.remove-tab-button').classList.add('hidden')}}
+          >
+            <button
+              className={`px-4 py-2 rounded-md text-sm ${
+                activeTab === tab.id
+                  ? darkMode ? 'bg-indigo-600 text-white' : 'bg-indigo-500 text-white'
+                  : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              } transition-colors flex items-center`}
+              onClick={() => switchTab(tab.id)}
+            >
+              {tab.filename || 'New Tab'} {/* Display filename if available */}
+            </button>
+            <button
+              className="remove-tab-button absolute top-1 right-1 p-1 rounded-full hover:bg-red-200 hidden"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent tab switch
+                removeTab(tab.id);
+              }}
+              aria-label="Remove Tab"
+            >
+              <X className="h-3 w-3 text-white-500" />
+            </button>
+          </div>
+        ))}
+        <button
+          className={`px-3 py-2 rounded-md text-sm ${
+            darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          } transition-colors flex items-center`}
+          onClick={addTab}
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          Add Tab
+        </button>
       </div>
     </nav>
   );
@@ -200,12 +207,10 @@ const InputArea = ({ handleFileUpload, fileInput, darkMode }) => {
 };
 
 const ManualMode = () => {
-  const [rowData, setRowData] = useState([]);
-  const [columnDefs, setColumnDefs] = useState([]);
+  const [tabs, setTabs] = useState([{ id: 1, filename: null, rowData: [], columnDefs: [] }]); // Array of tabs
+  const [activeTab, setActiveTab] = useState(1); // ID of the active tab
   const [gridApi, setGridApi] = useState(null);
   const [gridColumnApi, setGridColumnApi] = useState(null);
-  const [isFileUploaded, setIsFileUploaded] = useState(false);
-  const [fileDetails, setFileDetails] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
   const fileInput = useRef(null);
   const gridWrapperRef = useRef(null);
@@ -303,11 +308,43 @@ const ManualMode = () => {
     }
   }, [darkMode, gridApi]);
 
+  const switchTab = (tabId) => {
+    setActiveTab(tabId);
+  };
+
+  const addTab = () => {
+    const newTabId = tabs.length > 0 ? Math.max(...tabs.map(tab => tab.id)) + 1 : 1;
+    setTabs([...tabs, { id: newTabId, filename: null, rowData: [], columnDefs: [] }]);
+  };
+
+  const removeTab = (tabId) => {
+    // Prevent removing the last tab
+    if (tabs.length <= 1) {
+      alert("Cannot remove the last tab.");
+      return;
+    }
+
+    // Remove the tab
+    setTabs(prevTabs => prevTabs.filter(tab => tab.id !== tabId));
+
+    // If the removed tab was the active tab, switch to the first tab
+    if (activeTab === tabId) {
+      setActiveTab(tabs[0].id);
+    }
+  };
+
+  const getActiveTabData = () => {
+    return tabs.find(tab => tab.id === activeTab) || { rowData: [], columnDefs: [] };
+  };
+
+  const activeTabData = getActiveTabData();
+
   const resetFile = () => {
-    setIsFileUploaded(false);
-    setFileDetails(null);
-    setRowData([]);
-    setColumnDefs([]);
+    setTabs(prevTabs =>
+        prevTabs.map(tab =>
+            tab.id === activeTab ? { ...tab, filename: null, rowData: [], columnDefs: [] } : tab
+        )
+    );
     if (fileInput.current) {
       fileInput.current.value = "";
     }
@@ -432,14 +469,11 @@ const ManualMode = () => {
           rows.push(row);
         }
         
-        setColumnDefs(columnDefs);
-        setRowData(rows);
-        setIsFileUploaded(true);
-        setFileDetails({
-          filename: file.name,
-          rows: rows.length,
-          columns: headers.length
-        });
+        setTabs(prevTabs =>
+          prevTabs.map(tab =>
+            tab.id === activeTab ? { ...tab, filename: file.name, rowData: rows, columnDefs: columnDefs } : tab
+          )
+        );
       }
     };
     
@@ -466,37 +500,42 @@ const ManualMode = () => {
     },
   };
 
+  const currentTab = tabs.find(tab => tab.id === activeTab);
+  const isFileUploaded = currentTab && currentTab.filename !== null;
+
   return (
     <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gray-850' : 'bg-gray-100'}`}>
-      <Navbar 
-        darkMode={darkMode} 
-        toggleDarkMode={toggleDarkMode} 
-        isFileUploaded={isFileUploaded} 
-        fileDetails={fileDetails}
-        resetFile={resetFile}
+      <Navbar
+        darkMode={darkMode}
+        toggleDarkMode={toggleDarkMode}
+        activeTab={activeTab}
+        tabs={tabs}
+        switchTab={switchTab}
+        addTab={addTab}
+        removeTab={removeTab}
       />
-      
+
       <div className="flex-grow flex flex-col">
         {!isFileUploaded ? (
           <div className="container mx-auto p-6 flex items-center justify-center h-full">
             <div className="w-full max-w-2xl">
-              <InputArea 
-                handleFileUpload={handleFileUpload} 
-                fileInput={fileInput} 
+              <InputArea
+                handleFileUpload={handleFileUpload}
+                fileInput={fileInput}
                 darkMode={darkMode}
               />
             </div>
           </div>
         ) : (
           <div className="flex-grow flex flex-col">
-            <div 
+            <div
               ref={gridWrapperRef}
-              className={darkMode ? 'ag-theme-alpine-dark' : 'ag-theme-alpine'} 
+              className={darkMode ? 'ag-theme-alpine-dark' : 'ag-theme-alpine'}
               style={{ height: 'calc(100vh - 120px)', width: '100%' }}
             >
               <AgGridReact
-                rowData={rowData}
-                columnDefs={columnDefs}
+                rowData={currentTab?.rowData || []}
+                columnDefs={currentTab?.columnDefs || []}
                 defaultColDef={defaultColDef}
                 autoGroupColumnDef={autoGroupColumnDef}
                 onGridReady={onGridReady}
@@ -541,7 +580,7 @@ const ManualMode = () => {
                 domLayout="normal"
               />
             </div>
-            
+
             <div className={`px-6 py-3 ${darkMode ? 'bg-indigo-900/20 text-indigo-300' : 'bg-indigo-50 text-indigo-700'} border-t ${darkMode ? 'border-indigo-900/50' : 'border-indigo-100'} flex items-center`}>
               <div className={`p-2 rounded-full mr-3 ${darkMode ? 'bg-indigo-800/50' : 'bg-indigo-100'}`}>
                 <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

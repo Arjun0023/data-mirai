@@ -553,7 +553,7 @@ const ManualMode = () => {
                 Data loaded successfully. Drag columns to the Row Groups or Pivot sections to analyze your data. You can also create charts from your data using the context menu.
               </p>
             </div>
-          </div>
+          </div>//
         )}
       </div>
     </div>

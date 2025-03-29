@@ -353,7 +353,7 @@ const ManualMode = () => {
     
     if (!file) return;
 
-    const reader = new FileReader();
+    const reader = new FileReader();//
     
     reader.onload = (event) => {
       const data = new Uint8Array(event.target.result);

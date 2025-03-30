@@ -28,8 +28,8 @@ function TableComponent({ data, darkMode, maxHeight }) {
     const tableContainer = tableRef.current;
     const availableWidth = tableContainer.clientWidth;
     
-    // Extract column names
-    const columns = Object.keys(data[0]);
+    // Extract column names (excluding 'color')
+    const columns = Object.keys(data[0]).filter(col => col !== 'color');
     const numColumns = columns.length;
     
     // Estimate content length for each column to determine relative widths
@@ -76,8 +76,8 @@ function TableComponent({ data, darkMode, maxHeight }) {
     return <p className="text-center py-4">No data available</p>;
   }
   
-  // Extract column names dynamically
-  const columns = Object.keys(data[0]);
+  // Extract column names (excluding 'color')
+  const columns = Object.keys(data[0]).filter(col => col !== 'color');
   
   return (
     <div 
@@ -108,32 +108,39 @@ function TableComponent({ data, darkMode, maxHeight }) {
               </tr>
             </thead>
             <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
-              {data.map((row, rowIndex) => (
-                <tr 
-                  key={rowIndex} 
-                  className={`${
-                    rowIndex % 2 === 0 
-                      ? (darkMode ? 'bg-gray-800' : 'bg-white') 
-                      : (darkMode ? 'bg-gray-750' : 'bg-gray-50')
-                  } hover:${darkMode ? 'bg-gray-700' : 'bg-gray-100'} transition-colors`}
-                >
-                  {columns.map((column, colIndex) => {
-                    const cellValue = formatCellValue(row[column]);
-                    return (
-                      <td 
-                        key={colIndex} 
-                        className={`px-3 py-2 text-xs truncate ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
-                        style={{ 
-                          width: columnWidths[colIndex] ? `${columnWidths[colIndex]}px` : 'auto'
-                        }}
-                        title={cellValue} // Show full content on hover
-                      >
-                        {cellValue}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
+              {data.map((row, rowIndex) => {
+                // Determine row color based on the 'color' property
+                const rowColor = row.color || (darkMode ? 'bg-gray-800' : 'bg-white');
+                
+                return (
+                  <tr 
+                    key={rowIndex} 
+                    className={`
+                      hover:${darkMode ? 'bg-gray-700' : 'bg-gray-100'} 
+                      transition-colors
+                    `}
+                    style={{
+                      backgroundColor: rowColor + (darkMode ? '33' : '1A'), // Add opacity for dark mode
+                    }}
+                  >
+                    {columns.map((column, colIndex) => {
+                      const cellValue = formatCellValue(row[column]);
+                      return (
+                        <td 
+                          key={colIndex} 
+                          className={`px-3 py-2 text-xs truncate ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                          style={{ 
+                            width: columnWidths[colIndex] ? `${columnWidths[colIndex]}px` : 'auto'
+                          }}
+                          title={cellValue} // Show full content on hover
+                        >
+                          {cellValue}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

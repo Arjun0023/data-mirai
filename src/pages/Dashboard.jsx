@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Sun, Moon, Trash2, BarChart, PieChart, Table, Download, Move } from 'lucide-react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import BarChartComponent from './BarChartComponent';
-import PieChartComponent from './PieChartComponent';
-import TableComponent from './TableComponent';
+import BarChartComponent from '../components/Dashboard/BarChart/BarChartComponent';
+import PieChartComponent from '../components/Dashboard/PieChart/PieChartComponent';
+import TableComponent from '../components/Dashboard/Table/TableComponent';
 import ReactMarkdown from "react-markdown";
 import domtoimage from 'dom-to-image';
 

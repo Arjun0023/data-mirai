@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
-import { Paperclip, Send, Mic, MicOff, Settings, CornerDownLeft, Languages } from 'lucide-react';
+import { Mic, MicOff, CornerDownLeft, Languages } from 'lucide-react';
 
 const languageOptions = [
   { code: 'en-IN', name: 'Hinglish' },

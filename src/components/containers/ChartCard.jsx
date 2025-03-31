@@ -5,7 +5,7 @@ import { GripVertical, Trash2, BarChart, LineChart as LineChartIcon, PieChart as
 // Import the separate chart components
 import BarChartComponent from './BarChartComponent';
 import PieChartComponent from './PieChartComponent';
-import TableComponent from './TableComponent';
+import TableComponent from '../Dashboard/Table/TableComponent';
 
 const ItemTypes = {
   CHART: 'chart'

@@ -1,10 +1,10 @@
 import { Routes, Route } from 'react-router-dom'
-import Root from './Root'
-import Home from './Home'
-import Dashboard from './Dashboard'
-import ManualMode from './ManualMode'
-import { DataProvider } from './DataContext'
-import Ask from './Ask'
+import Root from './pages/Root'
+import Home from './pages/Home'
+import Dashboard from './pages/Dashboard'
+import ManualMode from './pages/ManualMode'
+import { DataProvider } from './components/data/DataContext'
+import Ask from './pages/Ask'
 
 function App() {
   return (

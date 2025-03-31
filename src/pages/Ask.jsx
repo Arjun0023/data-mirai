@@ -2,14 +2,14 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { BarChart, PieChart, Table, BookmarkPlus, FileText, Download, Code, HelpCircle } from 'lucide-react';
 import ReactMarkdown from "react-markdown";
-import BarChartComponent from './BarChartComponent';
-import PieChartComponent from './PieChartComponent';
-import TableComponent from './TableComponent';
-import DynamicStackedBarChartComponent from './DynamicStackBarChartComponent';
-import useData from './useData'; // Import the hook
+import BarChartComponent from '../components/Dashboard/BarChart/BarChartComponent';
+import PieChartComponent from '../components/Dashboard/PieChart/PieChartComponent';
+import TableComponent from '../components/Dashboard/Table/TableComponent';
+import DynamicStackedBarChartComponent from '../components/Dashboard/BarChart/DynamicStackBarChartComponent';
+import useData from '../components/data/useData'; // Import the hook
 import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';
-import InputArea from './InputArea';
+import Navbar from '../components/navbar/Navbar';
+import InputArea from '../components/input/InputArea';
 
 // Memoize the result item component to prevent re-renders
 const ResultItem = React.memo(({ result, displayMode, darkMode, saveChartToDashboard, setDisplayMode, savedCharts, COLORS }) => {

@@ -1,17 +1,11 @@
 // Home.js
-import React, { useState, useEffect, useCallback } from 'react';
-import { Paperclip, Sun, Moon, Send, Upload, BarChart, PieChart, Table, BookmarkPlus, Layout } from 'lucide-react';
-import ReactMarkdown from "react-markdown";
+import React, { useState, useCallback } from 'react';
+import { Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; // Import for navigation
-import BarChartComponent from './BarChartComponent';
-import PieChartComponent from './PieChartComponent';
-import TableComponent from './TableComponent';
-import DynamicStackedBarChartComponent from './DynamicStackBarChartComponent';
-import InputArea from './InputArea'; // Import the new InputArea component
-import FileInfoDisplay from './uploaded';
-import { FileText, Download, Code, HelpCircle } from 'lucide-react';
-import Navbar from './Navbar';
-import useData from './useData'; // Import the hook
+import InputArea from '../components/input/InputArea'; // Import the new InputArea component
+import FileInfoDisplay from '../components/containers/uploaded';
+import Navbar from '../components/navbar/Navbar';
+import useData from '../components/data/useData'; // Import the hook
 
 function Home() {
   const navigate = useNavigate();

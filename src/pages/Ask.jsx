@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/navbar/Navbar';
 import InputArea from '../components/input/InputArea';
 
-// Memoize the result item component to prevent re-renders
+
 const ResultItem = React.memo(({ result, displayMode, darkMode, saveChartToDashboard, setDisplayMode, savedCharts, COLORS }) => {
     if (!result || !result.resultData) return null;
 

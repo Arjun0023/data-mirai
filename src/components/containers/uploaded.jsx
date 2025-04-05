@@ -1,7 +1,7 @@
 import React from 'react';
 import { BarChart, DownloadCloud, FileText, Info, Layers, Terminal } from 'lucide-react';
 
-const FileInfoDisplay = ({ uploadedFileData, darkMode }) => {
+const FileInfoDisplay = ({ uploadedFileData, darkMode, onQuestionClick}) => {
   if (!uploadedFileData) return null;
 
   const getStatusColor = (status) => {
@@ -87,6 +87,7 @@ const FileInfoDisplay = ({ uploadedFileData, darkMode }) => {
                 <div 
                   key={idx} 
                   className={`text-sm p-2 rounded-lg cursor-pointer ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-100'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'} transition-colors`}
+                  onClick={() => onQuestionClick && onQuestionClick(question)}
                 >
                   {question}
                 </div>

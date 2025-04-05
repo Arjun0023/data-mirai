@@ -160,6 +160,17 @@ function Home() {
     }
   };
 
+  const handleQuestionClick = (question) => {
+    setMessage(question);
+    // Use setTimeout to ensure the message is set before submitting
+    setTimeout(() => {
+      const event = { preventDefault: () => {} }; // Create a mock event
+      handleSubmit(event);
+    }, 10);
+  };
+
+
+
   // New function to fetch summary
   const fetchSummary = async (question, resultData) => {
     try {
@@ -286,7 +297,9 @@ function Home() {
     <div className="transition-all duration-300 ease-in-out w-4/4 mx-auto">
       <FileInfoDisplay
         uploadedFileData={uploadedFileData}
-        darkMode={darkMode} />
+        darkMode={darkMode} 
+        onQuestionClick={handleQuestionClick}
+        />
     </div>
   )}
 

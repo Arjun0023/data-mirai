@@ -118,7 +118,7 @@ const ResultItem = React.memo(({ result, displayMode, darkMode, saveChartToDashb
 
                     {displayMode === 'piechart' && (
                         <div className="h-full w-full">
-                            <PieChartComponent data={result.resultData.formatted} colors={COLORS} />
+                            <PieChartComponent data={result.resultData.or} colors={COLORS} />
                         </div>
                     )}
 

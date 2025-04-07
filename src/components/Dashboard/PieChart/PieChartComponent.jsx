@@ -3,17 +3,18 @@ import { PieChart as RechartsPieChart, Pie, Cell, Tooltip, Legend, ResponsiveCon
 
 function PieChartComponent({ data }) {
   // Transform the data to extract information from the 'value' property
-  const transformedData = data.map(item => ({
-    name: item.value.category, // Use category as the name
-    value: item.value.value, // Use the value from the nested value object
-    color: item.value.color // Use the color from the nested value object
-  }));
-
+  console.log("PieChartComponent data:", data);
+  // const transformedData = data.map(item => ({
+  //   name: item.value.category, // Use category as the name
+  //   value: item.value.value, // Use the value from the nested value object
+  //   color: item.value.color // Use the color from the nested value object
+  // }));
+console.log("Transformed data:");
   return (
     <ResponsiveContainer width="100%" height={400}>
       <RechartsPieChart>
         <Pie
-          data={transformedData}
+          data={data}
           cx="50%"
           cy="50%"
           labelLine={true}
@@ -23,9 +24,9 @@ function PieChartComponent({ data }) {
           paddingAngle={1}
           dataKey="value"
         >
-          {transformedData.map((entry, index) => (
+          {/* {transformedData.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={entry.color} />
-          ))}
+          ))} */}
         </Pie>
         <Tooltip 
           formatter={(value) => new Intl.NumberFormat('en-US', { 

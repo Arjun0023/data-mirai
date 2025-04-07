@@ -4,6 +4,7 @@ import { ArrowLeft, Sun, Moon, Trash2, BarChart, PieChart, Table, Download, Move
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import BarChartComponent from '../components/Dashboard/BarChart/BarChartComponent';
+import DynamicStackedBarChartComponent from '../components/Dashboard/BarChart/DynamicStackBarChartComponent';
 import PieChartComponent from '../components/Dashboard/PieChart/PieChartComponent';
 import TableComponent from '../components/Dashboard/Table/TableComponent';
 import ReactMarkdown from "react-markdown";
@@ -136,9 +137,9 @@ const ChartCard = ({ chart, index, moveChart, changeChartDisplayMode, removeChar
       <div className="px-4 pb-4">
         <div className="h-64 w-full flex items-center justify-center bg-opacity-30 rounded-lg overflow-hidden">
           {chartDisplayModes[chart.id] === 'barchart' && (
-            <BarChartComponent 
+            <DynamicStackedBarChartComponent
               data={chart.data.formatted || []} 
-              colors={COLORS} 
+              
               darkMode={darkMode}
             />
           )}
@@ -209,7 +210,7 @@ function Dashboard() {
   };
 
   const goBack = () => {
-    navigate('/ask');
+    navigate('/home');
   };
 
   const removeChart = (chartId) => {

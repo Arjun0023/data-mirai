@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { read, utils } from 'xlsx';
 import { FileText, Upload, Database, HelpCircle, Moon, Sun, Plus, X } from 'lucide-react';
-
+import Navbar from '../components/navbar/Navbar';
 // Import AG Grid styles - using only what's needed based on the theme
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -92,36 +92,11 @@ ModuleRegistry.registerModules([
 // Set license key
 LicenseManager.setLicenseKey("[TRIAL]_this_{AG_Charts_and_AG_Grid}_Enterprise_key_{AG-078794}_is_granted_for_evaluation_only___Use_in_production_is_not_permitted___Please_report_misuse_to_legal@ag-grid.com___For_help_with_purchasing_a_production_key_please_contact_info@ag-grid.com___You_are_granted_a_{Single_Application}_Developer_License_for_one_application_only___All_Front-End_JavaScript_developers_working_on_the_application_would_need_to_be_licensed___This_key_will_deactivate_on_{14 April 2025}____[v3]_[0102]_MTc0NDU4NTIwMDAwMA==0e65fd8a353058a58afb8d7be064e726");
 
-const Navbar = ({ darkMode, toggleDarkMode, activeTab, tabs, switchTab, addTab, removeTab }) => { // Added removeTab
+const WrapperNavbar = ({ darkMode, toggleDarkMode, activeTab, tabs, switchTab, addTab, removeTab }) => { // Added removeTab
   return (
-    <nav className={`px-6 py-3 border-b ${darkMode ? 'bg-gray-900 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-800'}`}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className={`p-2 rounded-lg ${darkMode ? 'bg-indigo-900/40' : 'bg-indigo-100'}`}>
-            <Database className={`h-5 w-5 ${darkMode ? 'text-indigo-300' : 'text-indigo-600'}`} />
-          </div>
-          <h1 className="text-xl font-semibold">Data Explorer</h1>
-        </div>
-
-        <div className="flex items-center space-x-4">
-          <button
-            className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
-            onClick={toggleDarkMode}
-            title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-          >
-            {darkMode ? <Sun className="h-5 w-5 text-gray-300" /> : <Moon className="h-5 w-5 text-gray-600" />}
-          </button>
-          <button
-            className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
-            title="Help"
-          >
-            <HelpCircle className={`h-5 w-5 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
-          </button>
-        </div>
-      </div>
-
+    <nav className={`px-6 py-0 border-b ${darkMode ? 'bg-gray-900 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-800'}`}>
       {/* Tab Interface */}
-      <div className="mt-3 flex items-center space-x-2 overflow-x-auto">
+      <div className="mt-2 mb-2 flex items-center space-x-2 overflow-x-auto">
         {tabs.map((tab, index) => (
           <div
             key={tab.id}
@@ -504,8 +479,13 @@ const ManualMode = () => {
   const isFileUploaded = currentTab && currentTab.filename !== null;
 
   return (
-    <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gray-850' : 'bg-gray-100'}`}>
-      <Navbar
+    <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-BLA-850' : 'bg-gray-100'}`}>
+          <Navbar
+        darkMode={darkMode}
+        toggleDarkMode={toggleDarkMode}
+
+      />
+      <WrapperNavbar
         darkMode={darkMode}
         toggleDarkMode={toggleDarkMode}
         activeTab={activeTab}

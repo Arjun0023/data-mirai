@@ -10,7 +10,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
+:root{
+  background-color: #000000;
+}
 textarea {
   font-family: inherit;
   overflow: hidden;

@@ -5,12 +5,13 @@ import Dashboard from './pages/Dashboard'
 import ManualMode from './pages/ManualMode'
 import { DataProvider } from './components/data/DataContext'
 import Ask from './pages/Ask'
+import LandingPage from './pages/LandingPage/LandingPage'
 
 function App() {
   return (
     <DataProvider>
     <Routes>
-      <Route path="/" element={<Root />} />
+      <Route path="/" element={<LandingPage/>} />
       <Route path="/home" element={<Home />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/manualmode" element={<ManualMode />} />

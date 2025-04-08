@@ -19,7 +19,6 @@ function Home() {
   const [inputDisabled, setInputDisabled] = useState(true);
 
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#8dd1e1', '#a4de6c', '#d0ed57'];
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -304,14 +303,14 @@ function Home() {
   )}
 
   {/* Show most recent query result summary if available */}
-  {allResults.length > 0 && !isProcessing && (
+  {/* {allResults.length > 0 && !isProcessing && (
     <div className={`p-4 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-md`}>
       <h3 className="font-medium mb-2">Last Query: {allResults[allResults.length-1].question}</h3>
       <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
         {allResults[allResults.length-1].summary}
       </p>
     </div>
-  )}
+  )} */}
 
   {/* Loading spinner during processing */}
   {isProcessing && (

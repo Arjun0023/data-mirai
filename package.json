@@ -21,6 +21,8 @@
     "ag-grid-enterprise": "^33.1.1",
     "ag-grid-react": "^33.1.1",
     "dom-to-image": "^2.6.0",
+    "@remixicon/react": "^4.6.0",
+    "framer-motion": "^12.6.3",
     "lucide-react": "^0.482.0",
     "papaparse": "^5.5.2",
     "react": "^19.0.0",

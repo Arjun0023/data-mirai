@@ -28,7 +28,10 @@ function Navbar({
     <header className={`flex justify-between items-center p-4 border-b shadow-sm ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'}`}>
       {/* Left Side */}
       <div className="flex items-center">
-        <h1 className="text-2xl font-semibold bg-gradient-to-r from-indigo-500 to-blue-600 bg-clip-text text-transparent">AI Assistant</h1>
+      <h1 className="text-2xl font-semibold rounded-lg inline-block px-4 py-2">
+      <span className={`${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>Autolytics</span>
+      <span>AI</span>
+    </h1>
         {/* Dashboard Button */}
         <button
           onClick={goToDashboard}

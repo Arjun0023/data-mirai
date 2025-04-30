@@ -189,14 +189,14 @@ const ResultItem = React.memo(({ result, displayMode, darkMode, saveChartToDashb
                 </div>
             )}
 
-            <div className={`mt-3 p-3 rounded-lg ${darkMode ? 'bg-blue-900/20 text-blue-300 border border-blue-900/30' : 'bg-blue-50 text-blue-700 border border-blue-100'} flex items-center`}>
+            {/* <div className={`mt-3 p-3 rounded-lg ${darkMode ? 'bg-blue-900/20 text-blue-300 border border-blue-900/30' : 'bg-blue-50 text-blue-700 border border-blue-100'} flex items-center`}>
                 <div className={`p-1 rounded-full mr-2 ${darkMode ? 'bg-blue-800/50' : 'bg-blue-100'}`}>
                     <Download className="h-4 w-4" />
                 </div>
                 <p className="text-sm">
                     This chart visualization can be added to your dashboard for future reference
                 </p>
-            </div>
+            </div> */}
         </div>
     );
 });

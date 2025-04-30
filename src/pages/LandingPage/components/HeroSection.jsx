@@ -1,5 +1,6 @@
 import { BRAND_LOGOS, HERO_CONTENT } from "../constants";
 import heroImage from "../assets/hero.jpg";
+import image from "../assets/image.png"
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
@@ -101,7 +102,7 @@ const HeroSection = () => {
 
         <motion.div variants={fadeIn} className="mt-12">
           <img
-            src={heroImage}
+            src={image}
             alt="Dashboard"
             loading="lazy"
             className="w-full h-auto rounded-3xl border border-neutral-800 mb-28"

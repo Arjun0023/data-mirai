@@ -54,7 +54,7 @@ const ChartCard = ({
 
   const renderChartContent = () => {
     const { data, title, xKey, yKey, displayMode } = chart;
-    
+    console.log('Chart data:', data);
     if (!data || data.length === 0) {
       return (
         <div className={`flex items-center justify-center h-64 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>

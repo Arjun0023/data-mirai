@@ -2,37 +2,18 @@ import React from 'react';
 import { PieChart as RechartsPieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 function PieChartComponent({ data }) {
-  // Transform the data dynamically, finding the label and value keys
-  console.log("PieChartComponent data:", data);
-  
+  // Transform the data dynamically
   const transformedData = data.map(item => {
-    const valueObj = item.value;
-    // Find the color key directly
-    const color = valueObj.color;
+    // Dynamically extract the first string and number values
+    const name = Object.values(item).find(val => typeof val === 'string' && val !== item.color);
+    const value = Object.values(item).find(val => typeof val === 'number');
     
-    // Find the first key that's not "color" to use as category/name
-    // and the first numeric value to use as the value
-    let name = "";
-    let value = 0;
-    
-    Object.entries(valueObj).forEach(([key, val]) => {
-      if (key !== "color") {
-        // If we haven't set a name yet, use this key's value as the name
-        if (name === "" && typeof val === "string") {
-          name = val;
-        }
-        // If we haven't set a value yet, use this key's value as the pie value
-        // and it should be a number
-        if (value === 0 && typeof val === "number") {
-          value = val;
-        }
-      }
-    });
-    
-    return { name, value, color };
+    return { 
+      name: name || 'Unknown', 
+      value: value || 0, 
+      color: item.color || '#000000' 
+    };
   });
-  
-  console.log("Transformed data:", transformedData);
   
   return (
     <ResponsiveContainer width="100%" height={400}>

@@ -22,6 +22,7 @@ const DynamicStackedBarChartComponent = ({
   showSummaryStats = true,
   colorKey = 'color' // Add a property to define the color key in the data. Defaults to 'color'.
 }) => {
+  console.log(data,"DATA")
   // Process the data to transform it for the chart format
   const processedData = useMemo(() => {
     if (!Array.isArray(data) || data.length === 0) {

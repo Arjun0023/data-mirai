@@ -113,10 +113,7 @@ function Home() {
         console.log('Query data:', data);
         const formattedResult = {
           original: data,
-          formatted: Object.entries(data.result).map(([name, value]) => ({
-            name,
-            value
-          }))
+          formatted: data.result
         };
 
         // Add AI response

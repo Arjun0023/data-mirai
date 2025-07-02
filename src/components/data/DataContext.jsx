@@ -10,6 +10,7 @@ export const DataProvider = ({ children }) => {
     const [languageOptions, setLanguageOptions] = useState([]);
     const [savedCharts, setSavedCharts] = useState([]);
     const [displayMode, setDisplayMode] = useState('table');
+    const [isOverlayVisible, setIsOverlayVisible] = useState(false);
 
   useEffect(() => {
       // Load saved charts from localStorage on component mount

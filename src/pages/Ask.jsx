@@ -2,19 +2,20 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { BarChart, PieChart, Table, BookmarkPlus, FileText, Download, Code, HelpCircle } from 'lucide-react';
 import ReactMarkdown from "react-markdown";
-import BarChartComponent from './BarChartComponent';
-import PieChartComponent from './PieChartComponent';
-import TableComponent from './TableComponent';
-import DynamicStackedBarChartComponent from './DynamicStackBarChartComponent';
-import useData from './useData'; // Import the hook
+import BarChartComponent from '../components/Dashboard/BarChart/BarChartComponent';
+import PieChartComponent from '../components/Dashboard/PieChart/PieChartComponent';
+import TableComponent from '../components/Dashboard/Table/TableComponent';
+import DynamicStackedBarChartComponent from '../components/Dashboard/BarChart/DynamicStackBarChartComponent';
+import useData from '../components/data/useData'; // Import the hook
 import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';
-import InputArea from './InputArea';
+import Navbar from '../components/navbar/Navbar';
+import InputArea from '../components/input/InputArea';
+import FileInfoOverlay from '../components/FileInfoOverlay';
 
-// Memoize the result item component to prevent re-renders
+//
 const ResultItem = React.memo(({ result, displayMode, darkMode, saveChartToDashboard, setDisplayMode, savedCharts, COLORS }) => {
     if (!result || !result.resultData) return null;
-
+    console.log('Result:', result);
     // Function to flatten the data for the table
     const prepareDataForTable = () => {
         if (!Array.isArray(result.resultData.formatted)) {
@@ -29,7 +30,7 @@ const ResultItem = React.memo(({ result, displayMode, darkMode, saveChartToDashb
             }
             return item; // Return as is if it doesn't match our expected structure
         });
-
+        console.log('Flattened Data:', flattenedData);
         return flattenedData;
     };
 
@@ -58,7 +59,7 @@ const ResultItem = React.memo(({ result, displayMode, darkMode, saveChartToDashb
                     </div>
 
                     <div className="flex space-x-2">
-                        <button
+                        {/* <button
                             onClick={() => setDisplayMode('barchart')}
                             className={`p-2 rounded transition-colors ${displayMode === 'barchart'
                                 ? darkMode ? 'bg-blue-800 text-white' : 'bg-blue-500 text-white'
@@ -66,7 +67,7 @@ const ResultItem = React.memo(({ result, displayMode, darkMode, saveChartToDashb
                             aria-label="Show as bar chart"
                         >
                             <BarChart size={20} />
-                        </button>
+                        </button> */}
                         <button
                             onClick={() => setDisplayMode('piechart')}
                             className={`p-2 rounded transition-colors ${displayMode === 'piechart'
@@ -188,14 +189,14 @@ const ResultItem = React.memo(({ result, displayMode, darkMode, saveChartToDashb
                 </div>
             )}
 
-            <div className={`mt-3 p-3 rounded-lg ${darkMode ? 'bg-blue-900/20 text-blue-300 border border-blue-900/30' : 'bg-blue-50 text-blue-700 border border-blue-100'} flex items-center`}>
+            {/* <div className={`mt-3 p-3 rounded-lg ${darkMode ? 'bg-blue-900/20 text-blue-300 border border-blue-900/30' : 'bg-blue-50 text-blue-700 border border-blue-100'} flex items-center`}>
                 <div className={`p-1 rounded-full mr-2 ${darkMode ? 'bg-blue-800/50' : 'bg-blue-100'}`}>
                     <Download className="h-4 w-4" />
                 </div>
                 <p className="text-sm">
                     This chart visualization can be added to your dashboard for future reference
                 </p>
-            </div>
+            </div> */}
         </div>
     );
 });
@@ -208,13 +209,15 @@ const Ask = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [inputDisabled, setInputDisabled] = useState(false); // Enable input on /ask page
     const [isUploading, setIsUploading] = useState(false);
-
+    const [isFileInfoOverlayOpen, setIsFileInfoOverlayOpen] = useState(false);
     const COLORS = useMemo(() => ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#8dd1e1', '#a4de6c', '#d0ed57'], []);
 
     const toggleDarkMode = useCallback(() => {
         setDarkMode(prevMode => !prevMode);
     }, []);
-
+    const toggleFileInfoOverlay = useCallback(() => {
+        setIsFileInfoOverlayOpen(prev => !prev);
+    }, []);
     const handleLanguageOptions = useCallback((options) => {
         setLanguageOptions(options);
     }, [setLanguageOptions]);
@@ -251,7 +254,7 @@ const Ask = () => {
     const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
 
-        if (message.trim()) {
+        if (message.trim()&& uploadedFileData) {
             setIsProcessing(true);
 
             try {
@@ -298,6 +301,7 @@ const Ask = () => {
                 setAllResults(prevResults => [...prevResults, newResult]);
 
                 // No need to navigate, just stay on the page
+                
             } catch (error) {
                 console.error('Error processing query:', error);
                 // Handle error as needed
@@ -306,7 +310,7 @@ const Ask = () => {
                 setMessage(''); // Clear the input
             }
         }
-    }, [message, languageOptions, fetchSummary, displayMode, setAllResults]);
+    }, [message, languageOptions, fetchSummary, displayMode, setAllResults, uploadedFileData]);
 
     const handleFileChange = useCallback(() => {
         // implement this logic
@@ -353,6 +357,9 @@ const Ask = () => {
                 darkMode={darkMode}
                 toggleDarkMode={toggleDarkMode}
                 savedCharts={savedCharts}
+                showFileInfoIcon={!!uploadedFileData}
+                onToggleFileInfoOverlay={toggleFileInfoOverlay} // <-- Pass toggle function
+                uploadedFileData={uploadedFileData} // <-- Pass file data
             />
 
             <main className="flex-1 overflow-auto p-4">
@@ -372,6 +379,13 @@ const Ask = () => {
                 </div>
             </main>
             <InputArea {...inputAreaProps} />
+            {isFileInfoOverlayOpen && uploadedFileData && (
+                <FileInfoOverlay
+                    fileData={uploadedFileData}
+                    darkMode={darkMode}
+                    onClose={toggleFileInfoOverlay}
+                />
+            )}
         </div>
     );
 };

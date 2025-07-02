@@ -5,7 +5,7 @@ import { GripVertical, Trash2, BarChart, LineChart as LineChartIcon, PieChart as
 // Import the separate chart components
 import BarChartComponent from './BarChartComponent';
 import PieChartComponent from './PieChartComponent';
-import TableComponent from './TableComponent';
+import TableComponent from '../Dashboard/Table/TableComponent';
 
 const ItemTypes = {
   CHART: 'chart'
@@ -54,7 +54,7 @@ const ChartCard = ({
 
   const renderChartContent = () => {
     const { data, title, xKey, yKey, displayMode } = chart;
-    
+    console.log('Chart data:', data);
     if (!data || data.length === 0) {
       return (
         <div className={`flex items-center justify-center h-64 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>

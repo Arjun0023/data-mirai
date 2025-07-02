@@ -2,13 +2,19 @@ import React from 'react';
 import { PieChart as RechartsPieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 function PieChartComponent({ data }) {
-  // Transform the data to extract information from the 'value' property
-  const transformedData = data.map(item => ({
-    name: item.value.category, // Use category as the name
-    value: item.value.value, // Use the value from the nested value object
-    color: item.value.color // Use the color from the nested value object
-  }));
-
+  // Transform the data dynamically
+  const transformedData = data.map(item => {
+    // Dynamically extract the first string and number values
+    const name = Object.values(item).find(val => typeof val === 'string' && val !== item.color);
+    const value = Object.values(item).find(val => typeof val === 'number');
+    
+    return { 
+      name: name || 'Unknown', 
+      value: value || 0, 
+      color: item.color || '#000000' 
+    };
+  });
+  
   return (
     <ResponsiveContainer width="100%" height={400}>
       <RechartsPieChart>

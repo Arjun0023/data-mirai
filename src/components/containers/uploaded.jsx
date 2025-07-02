@@ -1,7 +1,7 @@
 import React from 'react';
 import { BarChart, DownloadCloud, FileText, Info, Layers, Terminal } from 'lucide-react';
 
-const FileInfoDisplay = ({ uploadedFileData, darkMode }) => {
+const FileInfoDisplay = ({ uploadedFileData, darkMode, onQuestionClick}) => {
   if (!uploadedFileData) return null;
 
   const getStatusColor = (status) => {
@@ -87,6 +87,7 @@ const FileInfoDisplay = ({ uploadedFileData, darkMode }) => {
                 <div 
                   key={idx} 
                   className={`text-sm p-2 rounded-lg cursor-pointer ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-100'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'} transition-colors`}
+                  onClick={() => onQuestionClick && onQuestionClick(question)}
                 >
                   {question}
                 </div>
@@ -124,89 +125,89 @@ const FileInfoDisplay = ({ uploadedFileData, darkMode }) => {
           </div>
 
           {uploadedFileData.first_10_rows && (
-            <div className={`rounded-lg overflow-hidden border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-              <div className={`flex items-center justify-between p-3 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                <div className="flex items-center space-x-2">
-                  <BarChart className={`h-4 w-4 ${darkMode ? 'text-orange-400' : 'text-orange-500'}`} />
-                  <h3 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Data Preview</h3>
-                </div>
-                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  First 10 of {uploadedFileData.num_rows_total.toLocaleString()} rows
-                </span>
-              </div>
-              <div className={`overflow-x-auto ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className={darkMode ? 'bg-gray-900' : 'bg-gray-50'}>
-                    <tr>
-                      {uploadedFileData.columns.slice(0, 6).map((column, index) => (
-                        <th
-                          key={index}
-                          scope="col"
-                          className={`px-3 py-2 text-left text-xs font-medium ${
-                            darkMode ? 'text-gray-400' : 'text-gray-500'
-                          } uppercase tracking-wider`}
-                        >
-                          {column}
-                        </th>
-                      ))}
-                      {uploadedFileData.columns.length > 6 && (
-                        <th
-                          scope="col"
-                          className={`px-3 py-2 text-left text-xs font-medium ${
-                            darkMode ? 'text-gray-400' : 'text-gray-500'
-                          } uppercase tracking-wider`}
-                        >
-                          ...
-                        </th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
-                    {uploadedFileData.first_10_rows.map((row, rowIndex) => (
-                      <tr 
-                        key={rowIndex} 
-                        className={`${
-                          rowIndex % 2 === 0 
-                            ? (darkMode ? 'bg-gray-800' : 'bg-white') 
-                            : (darkMode ? 'bg-gray-750' : 'bg-gray-50')
-                        } hover:${darkMode ? 'bg-gray-700' : 'bg-gray-100'} transition-colors`}
-                      >
-                        {uploadedFileData.columns.slice(0, 6).map((column, colIndex) => {
-                          let cellContent = row[column] !== null ? String(row[column]) : '-';
-                          let cellClass = "px-3 py-2 text-xs ";
-                          
-                          // Style by column type
-                          if (column === "STATUS") {
-                            cellClass += getStatusColor(cellContent);
-                          } else if (column === "SALES" || column === "PRICEEACH") {
-                            cellClass += "font-mono ";
-                          } else if (column === "ORDERDATE") {
-                            cellContent = formatDate(cellContent);
-                          }
-                          
-                          cellClass += darkMode ? 'text-gray-300' : 'text-gray-700';
-                          
-                          return (
-                            <td key={colIndex} className={cellClass}>
-                              {cellContent}
-                            </td>
-                          );
-                        })}
-                        {uploadedFileData.columns.length > 6 && (
-                          <td className={`px-3 py-2 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            ...
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className={`p-2 text-center text-xs ${darkMode ? 'bg-gray-900 text-gray-400' : 'bg-gray-50 text-gray-500'}`}>
-                You can ask questions about this data using natural language
-              </div>
-            </div>
-          )}
+  <div className={`rounded-lg overflow-hidden border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+    <div className={`flex items-center justify-between p-3 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+      <div className="flex items-center space-x-2">
+        <BarChart className={`h-4 w-4 ${darkMode ? 'text-orange-400' : 'text-orange-500'}`} />
+        <h3 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Data Preview</h3>
+      </div>
+      <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+        First 10 of {uploadedFileData.num_rows_total.toLocaleString()} rows
+      </span>
+    </div>
+    <div className={`overflow-auto ${darkMode ? 'bg-gray-800' : 'bg-white'}`} style={{ maxHeight: '400px' }}>
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className={`sticky top-0 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+          <tr>
+            {uploadedFileData.columns.slice(0, 6).map((column, index) => (
+              <th
+                key={index}
+                scope="col"
+                className={`px-3 py-2 text-left text-xs font-medium ${
+                  darkMode ? 'text-gray-400' : 'text-gray-500'
+                } uppercase tracking-wider`}
+              >
+                {column}
+              </th>
+            ))}
+            {uploadedFileData.columns.length > 6 && (
+              <th
+                scope="col"
+                className={`px-3 py-2 text-left text-xs font-medium ${
+                  darkMode ? 'text-gray-400' : 'text-gray-500'
+                } uppercase tracking-wider`}
+              >
+                ...
+              </th>
+            )}
+          </tr>
+        </thead>
+        <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
+          {uploadedFileData.first_10_rows.map((row, rowIndex) => (
+            <tr 
+              key={rowIndex} 
+              className={`${
+                rowIndex % 2 === 0 
+                  ? (darkMode ? 'bg-gray-800' : 'bg-white') 
+                  : (darkMode ? 'bg-gray-750' : 'bg-gray-50')
+              } hover:${darkMode ? 'bg-gray-700' : 'bg-gray-100'} transition-colors`}
+            >
+              {uploadedFileData.columns.slice(0, 6).map((column, colIndex) => {
+                let cellContent = row[column] !== null ? String(row[column]) : '-';
+                let cellClass = "px-3 py-2 text-xs ";
+                
+                // Style by column type
+                if (column === "STATUS") {
+                  cellClass += getStatusColor(cellContent);
+                } else if (column === "SALES" || column === "PRICEEACH") {
+                  cellClass += "font-mono ";
+                } else if (column === "ORDERDATE") {
+                  cellContent = formatDate(cellContent);
+                }
+                
+                cellClass += darkMode ? 'text-gray-300' : 'text-gray-700';
+                
+                return (
+                  <td key={colIndex} className={cellClass}>
+                    {cellContent}
+                  </td>
+                );
+              })}
+              {uploadedFileData.columns.length > 6 && (
+                <td className={`px-3 py-2 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  ...
+                </td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <div className={`p-2 text-center text-xs ${darkMode ? 'bg-gray-900 text-gray-400' : 'bg-gray-50 text-gray-500'}`}>
+      You can ask questions about this data using natural language
+    </div>
+  </div>
+)}
         </div>
       </div>
 

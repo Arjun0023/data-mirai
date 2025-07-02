@@ -1,17 +1,11 @@
 // Home.js
-import React, { useState, useEffect, useCallback } from 'react';
-import { Paperclip, Sun, Moon, Send, Upload, BarChart, PieChart, Table, BookmarkPlus, Layout } from 'lucide-react';
-import ReactMarkdown from "react-markdown";
+import React, { useState, useCallback } from 'react';
+import { Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; // Import for navigation
-import BarChartComponent from './BarChartComponent';
-import PieChartComponent from './PieChartComponent';
-import TableComponent from './TableComponent';
-import DynamicStackedBarChartComponent from './DynamicStackBarChartComponent';
-import InputArea from './InputArea'; // Import the new InputArea component
-import FileInfoDisplay from './uploaded';
-import { FileText, Download, Code, HelpCircle } from 'lucide-react';
-import Navbar from './Navbar';
-import useData from './useData'; // Import the hook
+import InputArea from '../components/input/InputArea'; // Import the new InputArea component
+import FileInfoDisplay from '../components/containers/uploaded';
+import Navbar from '../components/navbar/Navbar';
+import useData from '../components/data/useData'; // Import the hook
 
 function Home() {
   const navigate = useNavigate();
@@ -25,7 +19,6 @@ function Home() {
   const [inputDisabled, setInputDisabled] = useState(true);
 
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#8dd1e1', '#a4de6c', '#d0ed57'];
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -120,10 +113,7 @@ function Home() {
         console.log('Query data:', data);
         const formattedResult = {
           original: data,
-          formatted: Object.entries(data.result).map(([name, value]) => ({
-            name,
-            value
-          }))
+          formatted: data.result
         };
 
         // Add AI response
@@ -165,6 +155,17 @@ function Home() {
       }
     }
   };
+
+  const handleQuestionClick = (question) => {
+    setMessage(question);
+    // Use setTimeout to ensure the message is set before submitting
+    setTimeout(() => {
+      const event = { preventDefault: () => {} }; // Create a mock event
+      handleSubmit(event);
+    }, 10);
+  };
+
+
 
   // New function to fetch summary
   const fetchSummary = async (question, resultData) => {
@@ -292,19 +293,21 @@ function Home() {
     <div className="transition-all duration-300 ease-in-out w-4/4 mx-auto">
       <FileInfoDisplay
         uploadedFileData={uploadedFileData}
-        darkMode={darkMode} />
+        darkMode={darkMode} 
+        onQuestionClick={handleQuestionClick}
+        />
     </div>
   )}
 
   {/* Show most recent query result summary if available */}
-  {allResults.length > 0 && !isProcessing && (
+  {/* {allResults.length > 0 && !isProcessing && (
     <div className={`p-4 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-md`}>
       <h3 className="font-medium mb-2">Last Query: {allResults[allResults.length-1].question}</h3>
       <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
         {allResults[allResults.length-1].summary}
       </p>
     </div>
-  )}
+  )} */}
 
   {/* Loading spinner during processing */}
   {isProcessing && (

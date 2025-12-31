@@ -9,6 +9,7 @@ import PieChartComponent from '../components/Dashboard/PieChart/PieChartComponen
 import TableComponent from '../components/Dashboard/Table/TableComponent';
 import ReactMarkdown from "react-markdown";
 import domtoimage from 'dom-to-image';
+import { useTheme } from '../context/ThemeContext';
 
 // Define drag type
 const CHART_ITEM = 'chart';
@@ -16,7 +17,7 @@ const CHART_ITEM = 'chart';
 // Chart Card Component with Drag and Drop
 const ChartCard = ({ chart, index, moveChart, changeChartDisplayMode, removeChart, chartDisplayModes, COLORS, darkMode, prepareDataForTable }) => {
   const ref = useRef(null);
-  
+
   // Set up drag source
   const [{ isDragging }, drag] = useDrag({
     type: CHART_ITEM,
@@ -25,7 +26,7 @@ const ChartCard = ({ chart, index, moveChart, changeChartDisplayMode, removeChar
       isDragging: monitor.isDragging(),
     }),
   });
-  
+
   // Set up drop target
   const [, drop] = useDrop({
     accept: CHART_ITEM,
@@ -33,44 +34,44 @@ const ChartCard = ({ chart, index, moveChart, changeChartDisplayMode, removeChar
       if (!ref.current) {
         return;
       }
-      
+
       const dragIndex = draggedItem.index;
       const hoverIndex = index;
-      
+
       // Don't replace items with themselves
       if (dragIndex === hoverIndex) {
         return;
       }
-      
+
       // Get rectangle on screen
       const hoverBoundingRect = ref.current.getBoundingClientRect();
-      
+
       // Get vertical middle
       const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-      
+
       // Get mouse position
       const clientOffset = monitor.getClientOffset();
-      
+
       // Get pixels to the top
       const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-      
+
       // Only perform the move when the mouse has crossed half of the items height
       // When dragging downward, only move when the cursor is below 50%
       // When dragging upward, only move when the cursor is above 50%
-      
+
       // Dragging downward
       if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
         return;
       }
-      
+
       // Dragging upward
       if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
         return;
       }
-      
+
       // Time to actually perform the action
       moveChart(dragIndex, hoverIndex);
-      
+
       // Note: we're mutating the monitor item here!
       // Generally it's better to avoid mutations,
       // but it's good here for the sake of performance
@@ -78,53 +79,53 @@ const ChartCard = ({ chart, index, moveChart, changeChartDisplayMode, removeChar
       draggedItem.index = hoverIndex;
     },
   });
-  
+
   // Initialize drag and drop ref (combine drag and drop refs)
   drag(drop(ref));
-  
+
   return (
-    <div 
+    <div
       ref={ref}
-      className={`rounded-xl border ${darkMode ? 'border-gray-700 bg-gray-800/80' : 'border-gray-200 bg-white/90'} backdrop-blur-sm shadow-lg ${isDragging ? 'opacity-50 ring-2 ring-blue-500/50' : 'opacity-100'} transition-all duration-200 hover:shadow-xl`}
-      style={{ 
+      className={`rounded-xl border ${darkMode ? 'border-neutral-700 bg-neutral-800/80' : 'border-gray-200 bg-white'} ${isDragging ? 'opacity-50 ring-2 ring-gray-300' : 'opacity-100'} transition-all duration-200 shadow-sm hover:shadow-md`}
+      style={{
         cursor: isDragging ? 'grabbing' : 'grab'
       }}
     >
       <div className="flex justify-between  items-center p-3 border-b border-dashed border-opacity-30">
         <div className="flex items-center gap-2">
-          <Move size={16} className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} transition-colors duration-150 hover:text-blue-500`} />
+          <Move size={16} className={`${darkMode ? 'text-neutral-400' : 'text-neutral-500'} transition-colors duration-150 hover:text-neutral-600`} />
           <h2 className="text-l font-medium tracking-tight">{chart.title || 'Untitled Chart'}</h2>
         </div>
         <div className="flex items-center gap-1">
-          <button 
+          <button
             onClick={() => changeChartDisplayMode(chart.id, 'barchart')}
-            className={`p-2 rounded-md transition-colors duration-150 ${chartDisplayModes[chart.id] === 'barchart' 
-              ? (darkMode ? 'bg-gray-700 text-blue-400' : 'bg-blue-50 text-blue-600') 
-              : (darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100')}`}
+            className={`p-2 rounded-md transition-colors duration-150 ${chartDisplayModes[chart.id] === 'barchart'
+              ? (darkMode ? 'bg-neutral-700 text-neutral-300' : 'bg-blue-100 text-blue-700')
+              : (darkMode ? 'text-neutral-400 hover:bg-neutral-700' : 'text-slate-500 hover:bg-slate-100')}`}
             title="Bar Chart"
           >
             <BarChart size={16} />
           </button>
-          <button 
+          <button
             onClick={() => changeChartDisplayMode(chart.id, 'piechart')}
-            className={`p-2 rounded-md transition-colors duration-150 ${chartDisplayModes[chart.id] === 'piechart' 
-              ? (darkMode ? 'bg-gray-700 text-blue-400' : 'bg-blue-50 text-blue-600') 
-              : (darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100')}`}
+            className={`p-2 rounded-md transition-colors duration-150 ${chartDisplayModes[chart.id] === 'piechart'
+              ? (darkMode ? 'bg-neutral-700 text-neutral-300' : 'bg-blue-100 text-blue-700')
+              : (darkMode ? 'text-neutral-400 hover:bg-neutral-700' : 'text-slate-500 hover:bg-slate-100')}`}
             title="Pie Chart"
           >
             <PieChart size={16} />
           </button>
-          <button 
+          <button
             onClick={() => changeChartDisplayMode(chart.id, 'table')}
-            className={`p-2 rounded-md transition-colors duration-150 ${chartDisplayModes[chart.id] === 'table' 
-              ? (darkMode ? 'bg-gray-700 text-blue-400' : 'bg-blue-50 text-blue-600') 
-              : (darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100')}`}
+            className={`p-2 rounded-md transition-colors duration-150 ${chartDisplayModes[chart.id] === 'table'
+              ? (darkMode ? 'bg-neutral-700 text-neutral-300' : 'bg-blue-100 text-blue-700')
+              : (darkMode ? 'text-neutral-400 hover:bg-neutral-700' : 'text-slate-500 hover:bg-slate-100')}`}
             title="Table View"
           >
             <Table size={16} />
           </button>
           <div className="h-5 mx-1 border-l border-opacity-30 border-gray-400"></div>
-          <button 
+          <button
             onClick={() => removeChart(chart.id)}
             className={`p-2 rounded-md text-red-500 opacity-70 hover:opacity-100 transition-opacity duration-150 ${darkMode ? 'hover:bg-red-900/30' : 'hover:bg-red-50'}`}
             title="Remove Chart"
@@ -138,21 +139,21 @@ const ChartCard = ({ chart, index, moveChart, changeChartDisplayMode, removeChar
         <div className="h-64 w-full flex items-center justify-center bg-opacity-30 rounded-lg overflow-hidden">
           {chartDisplayModes[chart.id] === 'barchart' && (
             <DynamicStackedBarChartComponent
-              data={chart.data.formatted || []} 
-              
+              data={chart.data.formatted || []}
+
               darkMode={darkMode}
             />
           )}
           {chartDisplayModes[chart.id] === 'piechart' && (
-            <PieChartComponent 
-              data={chart.data.formatted || []} 
-              colors={COLORS} 
+            <PieChartComponent
+              data={chart.data.formatted || []}
+              colors={COLORS}
               darkMode={darkMode}
             />
           )}
           {chartDisplayModes[chart.id] === 'table' && (
-            <TableComponent 
-              data={prepareDataForTable(chart.data)} 
+            <TableComponent
+              data={prepareDataForTable(chart.data)}
               darkMode={darkMode}
             />
           )}
@@ -160,24 +161,28 @@ const ChartCard = ({ chart, index, moveChart, changeChartDisplayMode, removeChar
       </div>
 
       {chart.generatedAt && (
-        <div className={`px-4 py-2 text-xs border-t ${darkMode ? 'border-gray-700 text-gray-400' : 'border-gray-200 text-gray-500'} flex justify-between items-center`}>
+        <div className={`px-4 py-2 text-xs border-t ${darkMode ? 'border-neutral-700 text-neutral-400' : 'border-neutral-200 text-neutral-500'} flex justify-between items-center`}>
           <span>Created: {new Date(chart.generatedAt).toLocaleString()}</span>
           <Download size={14} className="opacity-60 hover:opacity-100 cursor-pointer" title="Download chart" />
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 };
 
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [darkMode, setDarkMode] = useState(false);
+
+  // Use centralized theme
+  const { darkMode, toggleDarkMode } = useTheme();
+
   const [savedCharts, setSavedCharts] = useState([]);
   const [chartDisplayModes, setChartDisplayModes] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const dashboardRef = useRef(null);
-  
+
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#8dd1e1', '#a4de6c', '#d0ed57'];
 
   useEffect(() => {
@@ -188,7 +193,7 @@ function Dashboard() {
       console.log('Parsed charts:', charts);
       if (charts && charts.length > 0) {
         setSavedCharts(charts);
-        
+
         // Initialize display modes for each chart
         const modes = {};
         charts.forEach(chart => {
@@ -198,16 +203,18 @@ function Dashboard() {
       }
     }
   }, []);
-  
+
+  // Sync theme with DOM
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
+
   useEffect(() => {
     if (savedCharts.length > 0) {
       localStorage.setItem('savedCharts', JSON.stringify(savedCharts));
     }
   }, [savedCharts]);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
 
   const goBack = () => {
     navigate('/home');
@@ -219,9 +226,9 @@ function Dashboard() {
 
   const changeChartDisplayMode = (chartId, mode) => {
     setChartDisplayModes(prev => ({ ...prev, [chartId]: mode }));
-    
+
     // Also update the chart's stored display mode
-    setSavedCharts(savedCharts.map(chart => 
+    setSavedCharts(savedCharts.map(chart =>
       chart.id === chartId ? { ...chart, displayMode: mode } : chart
     ));
   };
@@ -243,23 +250,23 @@ function Dashboard() {
     if (!Array.isArray(resultData.formatted)) {
       return [];
     }
-    
+
     const flattenedData = resultData.formatted.map(item => {
       if (item.name !== undefined && item.value !== undefined && typeof item.value === 'object') {
         return item.value;
       }
       return item;
     });
-    
+
     return flattenedData;
   };
 
   // Function to save the dashboard as an image using dom-to-image
   const saveDashboardAsImage = () => {
     if (!dashboardRef.current) return;
-    
+
     setIsSaving(true);
-    
+
     // Using dom-to-image instead of html2canvas
     domtoimage.toJpeg(dashboardRef.current, {
       quality: 0.95,
@@ -271,46 +278,46 @@ function Dashboard() {
         'transform-origin': 'top left'
       }
     })
-    .then(function(dataUrl) {
-      const link = document.createElement('a');
-      link.download = `dashboard-${new Date().toISOString().slice(0, 10)}.jpg`;
-      link.href = dataUrl;
-      link.click();
-      setIsSaving(false);
-    })
-    .catch(function(error) {
-      console.error('Error saving dashboard:', error);
-      
-      // Try the fallback approach of capturing individual charts
-      tryFallbackMethod();
-    });
+      .then(function (dataUrl) {
+        const link = document.createElement('a');
+        link.download = `dashboard-${new Date().toISOString().slice(0, 10)}.jpg`;
+        link.href = dataUrl;
+        link.click();
+        setIsSaving(false);
+      })
+      .catch(function (error) {
+        console.error('Error saving dashboard:', error);
+
+        // Try the fallback approach of capturing individual charts
+        tryFallbackMethod();
+      });
   };
-  
+
   // Fallback method - create screenshots using browser API
   const tryFallbackMethod = () => {
     // Alert user about trying a different approach
     alert('Trying a different method to capture your dashboard...');
-    
+
     try {
       // 1. Create a canvas element and get the 2D context
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      
+
       if (!dashboardRef.current || !ctx) {
         throw new Error("Failed to create canvas context");
       }
-      
+
       // 2. Set canvas dimensions
       const width = dashboardRef.current.offsetWidth;
       const height = dashboardRef.current.offsetHeight;
       const scale = 2; // Higher resolution
       canvas.width = width * scale;
       canvas.height = height * scale;
-      
+
       // 3. Set background based on theme
       ctx.fillStyle = darkMode ? '#1a202c' : '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
+
       // 4. Draw content using SVG foreignObject (works better with modern CSS)
       const data = `
         <svg xmlns="http://www.w3.org/2000/svg" width="${width * scale}" height="${height * scale}">
@@ -319,12 +326,12 @@ function Dashboard() {
           </foreignObject>
         </svg>
       `;
-      
+
       // 5. Create an image from the SVG
       const img = new Image();
-      img.onload = function() {
+      img.onload = function () {
         ctx.drawImage(img, 0, 0);
-        
+
         // 6. Convert canvas to JPEG and download
         try {
           const link = document.createElement('a');
@@ -338,13 +345,13 @@ function Dashboard() {
           setIsSaving(false);
         }
       };
-      
-      img.onerror = function() {
+
+      img.onerror = function () {
         console.error("Failed to load SVG image");
         setIsSaving(false);
         alert("Sorry, couldn't capture the dashboard. Please use your browser's screenshot feature instead.");
       };
-      
+
       // Set the image source to the SVG data
       img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(data);
     } catch (err) {
@@ -356,41 +363,88 @@ function Dashboard() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className={`flex flex-col min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-800'}`}>
+      <div className={`flex flex-col min-h-screen transition-colors duration-300 ${darkMode ? 'bg-neutral-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
         {/* Header */}
-        <header className={`sticky top-0 z-10 backdrop-blur-md ${darkMode ? 'bg-gray-900/90 border-gray-800' : 'bg-white/90 border-gray-200'} border-b px-6 py-3 flex justify-between items-center shadow-sm`}>
+        <header className={`sticky top-0 z-10 backdrop-blur-md ${darkMode ? 'bg-neutral-900/90 border-neutral-800' : 'bg-white/95 border-gray-200'} border-b px-6 py-3 flex justify-between items-center shadow-sm`}>
           <div className="flex items-center space-x-4">
-            <button 
-              onClick={goBack} 
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors duration-150 ${darkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
-            >
-              <ArrowLeft size={18} />
-              <span>Back</span>
-            </button>
-            
             <h1 className="text-2xl font-semibold tracking-tight">
-              <span className={`${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>Data</span>
+              <span className={`${darkMode ? 'text-neutral-300' : 'text-gray-600'}`}>Data</span>
               <span>Dashboard</span>
             </h1>
           </div>
-          
+
+          {/* Centered Pill Navigation */}
+          <div className="absolute left-1/2 transform -translate-x-1/2">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate('/home')}
+                className="relative px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-200 group"
+                style={{
+                  backgroundColor: 'transparent',
+                  color: darkMode ? '#9ca3af' : '#6b7280'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = darkMode ? '#2a2a2a' : '#f3f4f6';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                Home
+                {/* Blue indicator on hover */}
+                <div className="absolute left-1/2 transform -translate-x-1/2 bg-blue-500 rounded-full opacity-0 group-hover:opacity-70 transition-opacity duration-200"
+                  style={{
+                    bottom: '4px',
+                    width: '48px',
+                    height: '3px'
+                  }}
+                />
+              </button>
+
+              <button
+                onClick={() => navigate('/manualmode')}
+                className="relative px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-200 group"
+                style={{
+                  backgroundColor: 'transparent',
+                  color: darkMode ? '#9ca3af' : '#6b7280'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = darkMode ? '#2a2a2a' : '#f3f4f6';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                Manual Mode
+                {/* Blue indicator on hover */}
+                <div className="absolute left-1/2 transform -translate-x-1/2 bg-blue-500 rounded-full opacity-0 group-hover:opacity-70 transition-opacity duration-200"
+                  style={{
+                    bottom: '4px',
+                    width: '48px',
+                    height: '3px'
+                  }}
+                />
+              </button>
+            </div>
+          </div>
+
           <div className="flex items-center gap-3">
-            <button 
-              onClick={saveDashboardAsImage} 
+            <button
+              onClick={saveDashboardAsImage}
               disabled={isSaving}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-150 
-                ${darkMode 
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500' 
-                  : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400'} 
+                ${darkMode
+                  ? 'bg-gradient-to-r from-neutral-600 to-neutral-700 hover:from-neutral-500 hover:to-neutral-600'
+                  : 'bg-gray-900 hover:bg-gray-800'} 
                 text-white font-medium shadow-md hover:shadow-lg ${isSaving ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               <Download size={18} />
               <span>{isSaving ? 'Saving...' : 'Export Dashboard'}</span>
             </button>
-            
-            <button 
-              onClick={toggleDarkMode} 
-              className={`p-2 rounded-lg transition-colors duration-150 ${darkMode ? 'bg-gray-800 text-yellow-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+
+            <button
+              onClick={toggleDarkMode}
+              className={`p-2 rounded-lg transition-all duration-150 ${darkMode ? 'bg-neutral-800 text-yellow-300 hover:bg-neutral-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
             >
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
@@ -398,25 +452,28 @@ function Dashboard() {
         </header>
 
         {/* Main Content */}
-        <main className={`flex-1 px-6 py-8 transition-colors duration-300 ${darkMode ? 'bg-gradient-to-b from-gray-900 to-gray-950' : 'bg-gradient-to-b from-gray-50 to-white'}`} ref={dashboardRef}>
+        <main className={`flex-1 px-6 py-8 transition-colors duration-300 ${darkMode ? 'bg-neutral-900' : 'bg-transparent'}`} ref={dashboardRef}>
           {savedCharts.length === 0 ? (
-            <div className={`flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-xl p-8 ${darkMode ? 'border-gray-700 bg-gray-800/30' : 'border-gray-200 bg-gray-50/50'}`}>
-              <div className={`flex items-center justify-center w-16 h-16 mb-6 rounded-full ${darkMode ? 'bg-gray-800' : 'bg-blue-50'}`}>
-                <BarChart size={24} className={darkMode ? 'text-blue-400' : 'text-blue-500'} />
+            <div className="flex items-center justify-center h-full">
+              <div className={`w-full max-w-2xl p-6 rounded-xl ${darkMode ? 'bg-neutral-800 text-neutral-100' : 'bg-white text-gray-900'} shadow-sm border ${darkMode ? 'border-neutral-700' : 'border-gray-200'}`}>
+                <div className={`flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-10 text-center ${darkMode ? 'border-neutral-700 bg-neutral-900/50' : 'border-gray-300 bg-gray-50'}`}>
+                  <div className={`flex items-center justify-center w-16 h-16 mb-6 rounded-full ${darkMode ? 'bg-neutral-800' : 'bg-gray-100'}`}>
+                    <BarChart size={24} className={darkMode ? 'text-neutral-400' : 'text-gray-600'} />
+                  </div>
+                  <p className="text-xl font-medium mb-4 text-center">No visualization data available</p>
+                  <p className={`text-sm mb-6 text-center ${darkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>Create a new chart to start analyzing your data</p>
+                  <button
+                    className={`flex items-center gap-2 px-5 py-2 rounded-lg transition-all duration-150 
+                    ${darkMode
+                        ? 'bg-neutral-600 hover:bg-neutral-500 text-white'
+                        : 'bg-gray-900 hover:bg-gray-800 text-white'} 
+                    font-medium shadow-sm hover:shadow-md`}
+                  >
+                    <PieChart size={16} />
+                    <span>Create New Visualization</span>
+                  </button>
+                </div>
               </div>
-              <p className="text-xl font-medium mb-4">No visualization data available</p>
-              <p className={`text-sm mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Create a new chart to start analyzing your data</p>
-              <button 
-                onClick={goBack} 
-                className={`flex items-center gap-2 px-5 py-2 rounded-lg transition-all duration-150 
-                  ${darkMode 
-                    ? 'bg-blue-600 hover:bg-blue-500 text-white' 
-                    : 'bg-blue-500 hover:bg-blue-400 text-white'} 
-                  font-medium shadow-sm hover:shadow-md`}
-              >
-                <PieChart size={16} />
-                <span>Create New Visualization</span>
-              </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -439,18 +496,18 @@ function Dashboard() {
         </main>
 
         {/* Footer */}
-        <footer className={`py-4 px-6 border-t ${darkMode ? 'border-gray-800 text-gray-400' : 'border-gray-200 text-gray-500'}`}>
+        <footer className={`py-4 px-6 border-t ${darkMode ? 'border-neutral-800 text-neutral-400' : 'border-neutral-200 text-neutral-500'}`}>
           <div className="flex justify-between items-center">
             <div className="text-sm">
               © {new Date().getFullYear()} Data Visualization Tool
             </div>
             <div className="text-xs">
-              <span className={darkMode ? 'text-blue-400' : 'text-blue-600'}>AI-Powered</span> Analytics Dashboard
+              <span className={darkMode ? 'text-neutral-300' : 'text-neutral-600'}>AI-Powered</span> Analytics Dashboard
             </div>
           </div>
         </footer>
       </div>
-    </DndProvider>
+    </DndProvider >
   );
 }
 

@@ -63,7 +63,7 @@ const HowItWorks = () => {
                                 />
                             </div>
 
-                            
+
                         </motion.div>
                     ))}
                 </motion.div>

@@ -1,87 +1,152 @@
-import React from 'react';
-// Import Eye icon
-import { Sun, Moon, Layout, Settings, Eye } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Sun, Moon, Eye } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-// Add new props: showFileInfoIcon and onToggleFileInfoOverlay
+/**
+ * Modern, centered navigation bar with pill-shaped tabs
+ * Implements clean UI pattern with subtle backgrounds and active state indicators
+ */
 function Navbar({
   darkMode,
   toggleDarkMode,
   savedCharts = [],
-  showFileInfoIcon = false, // Default to false
-  onToggleFileInfoOverlay = () => {}, // Default empty function
-  uploadedFileData // Add uploadedFileData prop
+  showFileInfoIcon = false,
+  onToggleFileInfoOverlay = () => { },
+  uploadedFileData
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Navigate to dashboard
-  const goToDashboard = () => {
-    navigate('/dashboard');
-  };
+  // Hover state management for blue indicator
+  const [hoveredTab, setHoveredTab] = useState(null);
 
-  // Navigate to manual mode
-  const goToManualMode = () => {
-    navigate('/manualmode');
-  };
+  // Determine active route for visual feedback
+  const isActive = (path) => location.pathname === path;
 
   return (
-    <header className={`flex justify-between items-center p-4 border-b shadow-sm ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'}`}>
-      {/* Left Side */}
+    <header
+      className="flex justify-between items-center px-8 py-4"
+      style={{
+        backgroundColor: darkMode ? '#1a1a1a' : '#ffffff',
+        borderBottom: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.1)'}`
+      }}
+    >
+      {/* Logo */}
       <div className="flex items-center">
-      <h1 className="text-2xl font-semibold rounded-lg inline-block px-4 py-2">
-      <span className={`${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>Autolytics</span>
-      <span>AI</span>
-    </h1>
-        {/* Dashboard Button */}
+        <h1 className="text-lg font-semibold">
+          <span className="text-blue-400">Autolytics</span>
+          <span className={darkMode ? 'text-white' : 'text-gray-900'}>AI</span>
+        </h1>
+      </div>
+
+      {/* Centered Navigation Tabs */}
+      <nav className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-3">
+        {/* Dashboard Tab */}
         <button
-          onClick={goToDashboard}
-          className={`ml-6 px-4 py-2 rounded-lg flex items-center transition-colors ${
-            darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 shadow-sm'
-          }`}
+          onClick={() => navigate('/dashboard')}
+          onMouseEnter={() => setHoveredTab('dashboard')}
+          onMouseLeave={() => setHoveredTab(null)}
+          className="relative px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-200"
+          style={{
+            backgroundColor: isActive('/dashboard')
+              ? darkMode ? '#2a2a2a' : '#f3f4f6'
+              : hoveredTab === 'dashboard'
+                ? darkMode ? 'rgba(42, 42, 42, 0.5)' : 'rgba(243, 244, 246, 0.5)'
+                : 'transparent',
+            color: isActive('/dashboard')
+              ? darkMode ? '#ffffff' : '#111827'
+              : darkMode ? '#9ca3af' : '#6b7280'
+          }}
         >
-          <Layout size={18} className="mr-2" />
           Dashboard
           {savedCharts && savedCharts.length > 0 && (
-            <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
-              darkMode ? 'bg-indigo-600 text-white' : 'bg-indigo-500 text-white'
-            }`}>
+            <span
+              className="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-500 text-white"
+            >
               {savedCharts.length}
             </span>
           )}
+          {/* Blue indicator - show on active OR hover */}
+          {(isActive('/dashboard') || hoveredTab === 'dashboard') && (
+            <div
+              className="absolute left-1/2 transform -translate-x-1/2 bg-blue-500 rounded-full transition-opacity duration-200"
+              style={{
+                bottom: '4px',
+                width: '48px',
+                height: '3px',
+                opacity: isActive('/dashboard') ? 1 : 0.7
+              }}
+            />
+          )}
         </button>
-        {/* Manual Mode Button */}
-        <button
-          onClick={goToManualMode}
-          className={`ml-4 px-4 py-2 rounded-lg flex items-center transition-colors ${
-            darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 shadow-sm'
-          }`}
-        >
-          <Settings size={18} className="mr-2" />
-          Manual Mode
-        </button>
-      </div>
 
-      {/* Right Side */}
-      <div className="flex items-center space-x-3">
-        {/* Conditionally render the File Info Icon */}
+        {/* Manual Mode Tab */}
+        <button
+          onClick={() => navigate('/manualmode')}
+          onMouseEnter={() => setHoveredTab('manualmode')}
+          onMouseLeave={() => setHoveredTab(null)}
+          className="relative px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-200"
+          style={{
+            backgroundColor: isActive('/manualmode')
+              ? darkMode ? '#2a2a2a' : '#f3f4f6'
+              : hoveredTab === 'manualmode'
+                ? darkMode ? 'rgba(42, 42, 42, 0.5)' : 'rgba(243, 244, 246, 0.5)'
+                : 'transparent',
+            color: isActive('/manualmode')
+              ? darkMode ? '#ffffff' : '#111827'
+              : darkMode ? '#9ca3af' : '#6b7280'
+          }}
+        >
+          Manual Mode
+          {/* Blue indicator - show on active OR hover */}
+          {(isActive('/manualmode') || hoveredTab === 'manualmode') && (
+            <div
+              className="absolute left-1/2 transform -translate-x-1/2 bg-blue-500 rounded-full transition-opacity duration-200"
+              style={{
+                bottom: '4px',
+                width: '48px',
+                height: '3px',
+                opacity: isActive('/manualmode') ? 1 : 0.7
+              }}
+            />
+          )}
+        </button>
+      </nav>
+
+      {/* Right Side Actions */}
+      <div className="flex items-center gap-2">
+        {/* File Info Icon (conditional) */}
         {showFileInfoIcon && uploadedFileData && (
-           <button
+          <button
             onClick={onToggleFileInfoOverlay}
-            className={`p-2 rounded-lg transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-white hover:bg-gray-50 border border-gray-200 shadow-sm text-gray-700'}`}
+            className="p-2.5 rounded-lg transition-colors"
+            style={{
+              color: darkMode ? '#9ca3af' : '#6b7280'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = darkMode ? 'rgba(107, 114, 128, 0.1)' : 'rgba(107, 114, 128, 0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
             aria-label="Show uploaded file information"
-            title="Show uploaded file information" // Tooltip
+            title="View file details"
           >
-            <Eye size={20} />
+            <Eye size={18} />
           </button>
         )}
 
-        {/* Dark Mode Toggle Button */}
+        {/* Theme Toggle */}
         <button
           onClick={toggleDarkMode}
-          className={`p-2 rounded-lg transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white hover:bg-gray-50 border border-gray-200 shadow-sm'}`}
+          className="p-2 rounded-lg transition-colors hover:bg-gray-700"
+          style={{
+            color: darkMode ? '#9ca3af' : '#6b7280'
+          }}
           aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+          title={darkMode ? "Light mode" : "Dark mode"}
         >
-          {darkMode ? <Sun size={20} className="text-gray-300" /> : <Moon size={20} className="text-gray-700" />}
+          {darkMode ? <Sun size={18} /> : <Moon size={18} />}
         </button>
       </div>
     </header>

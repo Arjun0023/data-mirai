@@ -1,7 +1,52 @@
-
 @import "tailwindcss";
 
-/* Additional custom styles */
+/* Dark Theme Variables */
+[data-theme="dark"] {
+  --bg-primary: #1a1a1a;
+  --bg-landing: #000000;
+  --bg-secondary: #242424;
+  --bg-input: #2c2c2c;
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --text-placeholder: #6b7280;
+  --border-color: rgba(255, 255, 255, 0.12);
+  --accent-blue: #3b82f6;
+}
+
+/* Light Theme Variables */
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-landing: #f8fafc;
+  /* Softer, more elegant background */
+  --bg-secondary: #f1f5f9;
+  /* Better contrast */
+  --bg-input: #ffffff;
+  --text-primary: #0f172a;
+  /* Deeper, more readable */
+  --text-secondary: #475569;
+  /* Better contrast */
+  --text-placeholder: #94a3b8;
+  --border-color: rgba(148, 163, 184, 0.2);
+  /* Softer borders */
+  --accent-blue: #3b82f6;
+  --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* Beautiful gradient */
+}
+
+/* Default to dark theme */
+:root {
+  --bg-primary: #1a1a1a;
+  --bg-landing: #000000;
+  --bg-secondary: #242424;
+  --bg-input: #2c2c2c;
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --text-placeholder: #6b7280;
+  --border-color: rgba(255, 255, 255, 0.12);
+  --accent-blue: #3b82f6;
+}
+
+/* Base Styles */
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -9,10 +54,9 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color: var(--text-primary);
 }
-:root{
-  background-color: #000000;
-}
+
 textarea {
   font-family: inherit;
   overflow: hidden;
@@ -20,7 +64,7 @@ textarea {
 
 /* Improve scrollbar aesthetics */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -28,11 +72,10 @@ textarea {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(155, 155, 155, 0.5);
-  border-radius: 20px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
 }
 
-/* Dark mode scrollbar */
-.dark ::-webkit-scrollbar-thumb {
-  background-color: rgba(200, 200, 200, 0.2);
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
 }

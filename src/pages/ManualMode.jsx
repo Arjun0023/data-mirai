@@ -3,13 +3,14 @@ import { AgGridReact } from 'ag-grid-react';
 import { read, utils } from 'xlsx';
 import { FileText, Upload, Database, HelpCircle, Moon, Sun, Plus, X } from 'lucide-react';
 import Navbar from '../components/navbar/Navbar';
+import { useTheme } from '../context/ThemeContext';
 // Import AG Grid styles - using only what's needed based on the theme
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 // Import AG Grid Community modules
-import { 
-  ModuleRegistry, 
+import {
+  ModuleRegistry,
   ClientSideRowModelModule,
   ValidationModule,
   NumberFilterModule,
@@ -42,7 +43,7 @@ import {
   ColumnsToolPanelModule,
   PivotModule,
   SetFilterModule,
-  RowGroupingPanelModule, 
+  RowGroupingPanelModule,
   QuickFilterModule,
   FiltersToolPanelModule
 } from "ag-grid-enterprise";
@@ -85,7 +86,7 @@ ModuleRegistry.registerModules([
   ColumnsToolPanelModule,
   PivotModule,
   SetFilterModule,
-  RowGroupingPanelModule, 
+  RowGroupingPanelModule,
   QuickFilterModule
 ]);
 
@@ -94,22 +95,21 @@ LicenseManager.setLicenseKey("[TRIAL]_this_{AG_Charts_and_AG_Grid}_Enterprise_ke
 
 const WrapperNavbar = ({ darkMode, toggleDarkMode, activeTab, tabs, switchTab, addTab, removeTab }) => { // Added removeTab
   return (
-    <nav className={`px-6 py-0 border-b ${darkMode ? 'bg-gray-900 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-800'}`}>
+    <nav className={`px-6 py-0 border-b ${darkMode ? 'bg-neutral-900 border-neutral-700 text-white' : 'bg-white border-neutral-200 text-neutral-800'}`}>
       {/* Tab Interface */}
       <div className="mt-2 mb-2 flex items-center space-x-2 overflow-x-auto">
         {tabs.map((tab, index) => (
           <div
             key={tab.id}
             className="relative"
-            onMouseEnter={(e) => {e.currentTarget.querySelector('.remove-tab-button').classList.remove('hidden')}}
-            onMouseLeave={(e) => {e.currentTarget.querySelector('.remove-tab-button').classList.add('hidden')}}
+            onMouseEnter={(e) => { e.currentTarget.querySelector('.remove-tab-button').classList.remove('hidden') }}
+            onMouseLeave={(e) => { e.currentTarget.querySelector('.remove-tab-button').classList.add('hidden') }}
           >
             <button
-              className={`px-4 py-2 rounded-md text-sm ${
-                activeTab === tab.id
-                  ? darkMode ? 'bg-indigo-600 text-white' : 'bg-indigo-500 text-white'
-                  : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              } transition-colors flex items-center`}
+              className={`px-4 py-2 rounded-md text-sm ${activeTab === tab.id
+                ? darkMode ? 'bg-neutral-600 text-white' : 'bg-neutral-500 text-white'
+                : darkMode ? 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                } transition-colors flex items-center`}
               onClick={() => switchTab(tab.id)}
             >
               {tab.filename || 'New Tab'} {/* Display filename if available */}
@@ -127,9 +127,8 @@ const WrapperNavbar = ({ darkMode, toggleDarkMode, activeTab, tabs, switchTab, a
           </div>
         ))}
         <button
-          className={`px-3 py-2 rounded-md text-sm ${
-            darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          } transition-colors flex items-center`}
+          className={`px-3 py-2 rounded-md text-sm ${darkMode ? 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+            } transition-colors flex items-center`}
           onClick={addTab}
         >
           <Plus className="h-4 w-4 mr-1" />
@@ -142,25 +141,24 @@ const WrapperNavbar = ({ darkMode, toggleDarkMode, activeTab, tabs, switchTab, a
 
 const InputArea = ({ handleFileUpload, fileInput, darkMode }) => {
   return (
-    <div className={`p-6 rounded-xl ${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-800'} shadow-lg border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+    <div className={`p-6 rounded-xl ${darkMode ? 'bg-neutral-800 text-neutral-100' : 'bg-white text-gray-900'} shadow-sm border ${darkMode ? 'border-neutral-700' : 'border-gray-200'}`}>
       <div className="flex items-center space-x-3 mb-4">
-        <div className={`p-2 rounded-lg ${darkMode ? 'bg-indigo-900/40' : 'bg-indigo-100'}`}>
-          <FileText className={`h-5 w-5 ${darkMode ? 'text-indigo-300' : 'text-indigo-600'}`} />
+        <div className={`p-2 rounded-lg ${darkMode ? 'bg-neutral-700' : 'bg-neutral-100'}`}>
+          <FileText className={`h-5 w-5 ${darkMode ? 'text-neutral-300' : 'text-neutral-600'}`} />
         </div>
         <h2 className="text-lg font-semibold">Upload File</h2>
       </div>
-      
-      <div className={`border-2 border-dashed rounded-lg p-10 text-center ${darkMode ? 'border-gray-700 bg-gray-900/50' : 'border-gray-200 bg-gray-50'}`}>
+
+      <div className={`border-2 border-dashed rounded-lg p-10 text-center ${darkMode ? 'border-neutral-700 bg-neutral-900/50' : 'border-gray-300 bg-gray-50'}`}>
         <div className="flex flex-col items-center justify-center">
-          <Upload className={`h-16 w-16 mb-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-          <p className={`mb-4 text-lg ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Drag and drop your file here or</p>
-          <label 
-            htmlFor="file-upload" 
-            className={`cursor-pointer px-6 py-3 rounded-md ${
-              darkMode 
-                ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
-                : 'bg-indigo-500 hover:bg-indigo-600 text-white'
-            } transition-colors font-medium`}
+          <Upload className={`h-16 w-16 mb-4 ${darkMode ? 'text-neutral-500' : 'text-neutral-400'}`} />
+          <p className={`mb-4 text-lg ${darkMode ? 'text-neutral-300' : 'text-neutral-600'}`}>Drag and drop your file here or</p>
+          <label
+            htmlFor="file-upload"
+            className={`cursor-pointer px-6 py-3 rounded-md ${darkMode
+              ? 'bg-neutral-600 hover:bg-neutral-700 text-white'
+              : 'bg-gray-900 hover:bg-gray-800 text-white'
+              } transition-all font-medium`}
           >
             Browse Files
           </label>
@@ -186,13 +184,14 @@ const ManualMode = () => {
   const [activeTab, setActiveTab] = useState(1); // ID of the active tab
   const [gridApi, setGridApi] = useState(null);
   const [gridColumnApi, setGridColumnApi] = useState(null);
-  const [darkMode, setDarkMode] = useState(false);
+
+  // Use centralized theme
+  const { darkMode, toggleDarkMode } = useTheme();
+
   const fileInput = useRef(null);
   const gridWrapperRef = useRef(null);
 
-  const toggleDarkMode = () => {
-    setDarkMode(prevMode => !prevMode);
-  };
+
 
   // Add custom CSS for AG Grid styling
   useEffect(() => {
@@ -254,7 +253,7 @@ const ManualMode = () => {
       }
     `;
     document.head.appendChild(styleElement);
-    
+
     return () => {
       const element = document.getElementById('ag-grid-custom-styles');
       if (element) {
@@ -262,19 +261,19 @@ const ManualMode = () => {
       }
     };
   }, []);
-  
+
   // Update the theme based on darkMode
   useEffect(() => {
     if (gridWrapperRef.current) {
       gridWrapperRef.current.classList.remove('ag-theme-alpine', 'ag-theme-alpine-dark');
       gridWrapperRef.current.classList.add(darkMode ? 'ag-theme-alpine-dark' : 'ag-theme-alpine');
-      
+
       // Force refresh the grid if it's ready
       if (gridApi) {
         gridApi.refreshCells({ force: true });
         gridApi.refreshHeader();
         gridApi.redrawRows();
-        
+
         // Give AG Grid a moment to process the theme change
         setTimeout(() => {
           gridApi.sizeColumnsToFit();
@@ -316,22 +315,22 @@ const ManualMode = () => {
 
   const resetFile = () => {
     setTabs(prevTabs =>
-        prevTabs.map(tab =>
-            tab.id === activeTab ? { ...tab, filename: null, rowData: [], columnDefs: [] } : tab
-        )
+      prevTabs.map(tab =>
+        tab.id === activeTab ? { ...tab, filename: null, rowData: [], columnDefs: [] } : tab
+      )
     );
     if (fileInput.current) {
       fileInput.current.value = "";
     }
   };
-//
+  //
   const onGridReady = (params) => {
     setGridApi(params.api);
     setGridColumnApi(params.columnApi);
-    
+
     // Set initial sizing
     params.api.sizeColumnsToFit();
-    
+
     // Add resize listener
     window.addEventListener('resize', () => {
       setTimeout(() => {
@@ -344,53 +343,53 @@ const ManualMode = () => {
   const guessColumnType = (values) => {
     // Filter out undefined and null values
     const definedValues = values.filter(v => v !== undefined && v !== null && v !== '');
-    
+
     if (definedValues.length === 0) return 'string';
-    
+
     // Check if all values are numbers
     const allNumbers = definedValues.every(v => !isNaN(Number(v)));
     if (allNumbers) return 'number';
-    
+
     // Check if all values are dates (simple check)
     const dateRegex = /^\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}$|^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
     const allDates = definedValues.every(v => typeof v === 'string' && dateRegex.test(v));
     if (allDates) return 'date';
-    
+
     // Default to string
     return 'string';
   };
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
-    
+
     if (!file) return;
 
     const reader = new FileReader();//
-    
+
     reader.onload = (event) => {
       const data = new Uint8Array(event.target.result);
       const workbook = read(data, { type: 'array' });
-      
+
       // Get the first worksheet
       const worksheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[worksheetName];
-      
+
       // Convert to JSON with headers
       const jsonData = utils.sheet_to_json(worksheet, { header: 1 });
-      
+
       if (jsonData.length > 0) {
         // First row as headers
         const headers = jsonData[0];
-        
+
         // Extract sample data to determine column types
         const sampleData = jsonData.slice(1, Math.min(21, jsonData.length)); // Take up to 20 rows for sampling
-        
+
         // Create column definitions from headers with appropriate typing
         const columnDefs = headers.map((header, index) => {
           // Extract sample values for this column
           const sampleValues = sampleData.map(row => row[index]);
           const colType = guessColumnType(sampleValues);
-          
+
           // Base column definition
           const colDef = {
             headerName: header,
@@ -405,7 +404,7 @@ const ManualMode = () => {
             enablePivot: true,
             enableValue: colType === 'number', // Only enable value by default for numeric columns
           };
-          
+
           // Add type-specific configurations
           if (colType === 'number') {
             colDef.filter = 'agNumberColumnFilter';
@@ -418,10 +417,10 @@ const ManualMode = () => {
           } else {
             colDef.filter = 'agTextColumnFilter';
           }
-          
+
           return colDef;
         });
-        
+
         // Transform remaining rows to row data with appropriate data type conversion
         const rows = [];
         for (let i = 1; i < jsonData.length; i++) {
@@ -429,10 +428,10 @@ const ManualMode = () => {
           for (let j = 0; j < headers.length; j++) {
             const value = jsonData[i][j];
             const headerKey = headers[j].toString();
-            
+
             // Skip undefined values
             if (value === undefined) continue;
-            
+
             // Convert value based on guessed column type
             const colType = guessColumnType([value]);
             if (colType === 'number' && !isNaN(Number(value))) {
@@ -443,7 +442,7 @@ const ManualMode = () => {
           }
           rows.push(row);
         }
-        
+
         setTabs(prevTabs =>
           prevTabs.map(tab =>
             tab.id === activeTab ? { ...tab, filename: file.name, rowData: rows, columnDefs: columnDefs } : tab
@@ -451,7 +450,7 @@ const ManualMode = () => {
         );
       }
     };
-    
+
     reader.readAsArrayBuffer(file);
   };
 
@@ -479,8 +478,8 @@ const ManualMode = () => {
   const isFileUploaded = currentTab && currentTab.filename !== null;
 
   return (
-    <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-BLA-850' : 'bg-gray-100'}`}>
-          <Navbar
+    <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-neutral-900' : 'bg-gray-50'}`}>
+      <Navbar
         darkMode={darkMode}
         toggleDarkMode={toggleDarkMode}
 
@@ -561,11 +560,11 @@ const ManualMode = () => {
               />
             </div>
 
-            <div className={`px-6 py-3 ${darkMode ? 'bg-indigo-900/20 text-indigo-300' : 'bg-indigo-50 text-indigo-700'} border-t ${darkMode ? 'border-indigo-900/50' : 'border-indigo-100'} flex items-center`}>
-              <div className={`p-2 rounded-full mr-3 ${darkMode ? 'bg-indigo-800/50' : 'bg-indigo-100'}`}>
+            <div className={`px-6 py-3 ${darkMode ? 'bg-neutral-800/50 text-neutral-300' : 'bg-neutral-50 text-neutral-700'} border-t ${darkMode ? 'border-neutral-700' : 'border-neutral-100'} flex items-center`}>
+              <div className={`p-2 rounded-full mr-3 ${darkMode ? 'bg-neutral-700' : 'bg-neutral-100'}`}>
                 <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 3L20.5 8V16L12 21L3.5 16V8L12 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M12 3L20.5 8V16L12 21L3.5 16V8L12 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
                 </svg>
               </div>
               <p className="text-sm">

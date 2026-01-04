@@ -110,10 +110,10 @@ const InputArea = memo(function InputArea({
   }, []);
 
   return (
-    <div className={`border-t ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} py-4 px-4 sm:px-6`}>
+    <div className={`border-t ${darkMode ? 'border-neutral-700 bg-neutral-800' : 'border-gray-200 bg-white'} py-4 px-4 sm:px-6`}>
       <div className="max-w-4xl mx-auto">
         <form onSubmit={handleSubmit} className="relative">
-          <div className={`rounded-xl overflow-hidden shadow-sm border ${darkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-300 bg-white'} transition-all duration-200 ${isRecognizing ? 'ring-2 ring-indigo-500' : ''}`}>
+          <div className={`rounded-xl overflow-hidden shadow-sm border ${darkMode ? 'border-neutral-700 bg-neutral-900' : 'border-gray-300 bg-white'} transition-all duration-200 ${isRecognizing ? 'ring-2 ring-red-500' : ''}`}>
             <div className="flex items-center w-full">
               {/* Left side buttons container */}
               <div className="flex items-center space-x-1 pl-3">
@@ -122,15 +122,14 @@ const InputArea = memo(function InputArea({
                   type="button"
                   onClick={startRecognition}
                   disabled={isProcessing || isRecognizing}
-                  className={`p-2 rounded-lg transition-colors ${
-                    isRecognizing
-                      ? darkMode
-                        ? 'text-red-400 bg-red-900/20' 
-                        : 'text-red-600 bg-red-50'
-                      : darkMode
-                        ? 'text-gray-400 hover:text-gray-300 hover:bg-gray-800' 
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                  }`}
+                  className={`p-2 rounded-lg transition-colors ${isRecognizing
+                    ? darkMode
+                      ? 'text-red-400 bg-red-900/20'
+                      : 'text-red-600 bg-red-50'
+                    : darkMode
+                      ? 'text-gray-400 hover:text-gray-300 hover:bg-gray-800'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                    }`}
                   aria-label={isRecognizing ? "Stop recording" : "Start recording"}
                 >
                   {isRecognizing ? <MicOff size={18} /> : <Mic size={18} />}
@@ -141,19 +140,18 @@ const InputArea = memo(function InputArea({
                   type="button"
                   onClick={toggleLanguageSelector}
                   disabled={isProcessing || isRecognizing}
-                  className={`p-2 rounded-lg transition-colors ${
-                    showLanguageSelector
-                      ? darkMode
-                        ? 'text-indigo-400 bg-indigo-900/20' 
-                        : 'text-indigo-600 bg-indigo-50'
-                      : darkMode
-                        ? 'text-gray-400 hover:text-gray-300 hover:bg-gray-800' 
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                  }`}
+                  className={`p-2 rounded-lg transition-colors ${showLanguageSelector
+                    ? darkMode
+                      ? 'text-neutral-300 bg-neutral-800'
+                      : 'text-gray-700 bg-gray-200'
+                    : darkMode
+                      ? 'text-gray-400 hover:text-gray-300 hover:bg-neutral-800'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                    }`}
                   aria-label="Language settings"
                 >
-                <Languages size={20}/>
-                
+                  <Languages size={20} />
+
                 </button>
               </div>
 
@@ -163,9 +161,8 @@ const InputArea = memo(function InputArea({
                 onChange={handleTextChange}
                 onKeyDown={handleKeyDown}
                 placeholder={inputDisabled ? "Upload a file to start..." : "Ask a question about your data..."}
-                className={`flex-1 resize-none py-3 px-3 outline-none text-base ${
-                  darkMode ? 'bg-gray-900 text-white placeholder-gray-500' : 'bg-white text-gray-800 placeholder-gray-400'
-                } ${inputDisabled || isProcessing ? 'cursor-not-allowed' : ''}`}
+                className={`flex-1 resize-none py-3 px-3 outline-none text-base ${darkMode ? 'bg-neutral-900 text-white placeholder-gray-500' : 'bg-white text-gray-800 placeholder-gray-400'
+                  } ${inputDisabled || isProcessing ? 'cursor-not-allowed' : ''}`}
                 rows="1"
                 style={{ minHeight: '48px', maxHeight: '150px' }}
                 disabled={inputDisabled || isProcessing}
@@ -175,11 +172,10 @@ const InputArea = memo(function InputArea({
               <div className="flex items-center pr-3">
                 <button
                   type="submit"
-                  className={`p-2 rounded-lg flex items-center justify-center ${
-                    message && !inputDisabled && !isProcessing
-                      ? `${darkMode ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-500 hover:bg-indigo-600'} text-white`
-                      : `${darkMode ? 'bg-gray-800 text-gray-600' : 'bg-gray-100 text-gray-400'} cursor-not-allowed`
-                  } transition-colors`}
+                  className={`p-2 rounded-lg flex items-center justify-center ${message && !inputDisabled && !isProcessing
+                    ? `${darkMode ? 'bg-neutral-600 hover:bg-neutral-500' : 'bg-gray-900 hover:bg-gray-800'} text-white`
+                    : `${darkMode ? 'bg-neutral-800 text-gray-600' : 'bg-gray-100 text-gray-400'} cursor-not-allowed`
+                    } transition-colors`}
                   disabled={!message || inputDisabled || isProcessing}
                   aria-label="Send message"
                 >
@@ -203,9 +199,8 @@ const InputArea = memo(function InputArea({
 
         {/* Language selector popup */}
         {showLanguageSelector && (
-          <div className={`mt-2 p-3 rounded-lg shadow-md border ${
-            darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
-          }`}>
+          <div className={`mt-2 p-3 rounded-lg shadow-md border ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
+            }`}>
             <p className={`text-xs mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               Select voice recognition language:
             </p>
@@ -213,15 +208,14 @@ const InputArea = memo(function InputArea({
               {languageOptions.map(lang => (
                 <button
                   key={lang.code}
-                  className={`px-3 py-2 text-sm rounded-lg text-left transition-colors ${
-                    recognitionLanguage === lang.code
-                      ? darkMode
-                        ? 'bg-indigo-900/30 text-indigo-300 border border-indigo-800'
-                        : 'bg-indigo-50 text-indigo-700 border border-indigo-100'
-                      : darkMode
-                        ? 'hover:bg-gray-800 text-gray-300'
-                        : 'hover:bg-gray-100 text-gray-700'
-                  }`}
+                  className={`px-3 py-2 text-sm rounded-lg text-left transition-colors ${recognitionLanguage === lang.code
+                    ? darkMode
+                      ? 'bg-neutral-800 text-neutral-300 border border-neutral-700'
+                      : 'bg-gray-200 text-gray-900 border border-gray-300'
+                    : darkMode
+                      ? 'hover:bg-neutral-800 text-gray-300'
+                      : 'hover:bg-gray-100 text-gray-700'
+                    }`}
                   onClick={() => handleLanguageSelect(lang.code)}
                 >
                   {lang.name}
@@ -233,9 +227,8 @@ const InputArea = memo(function InputArea({
 
         {/* Status message */}
         {isRecognizing && (
-          <div className={`mt-2 p-2 rounded-lg text-center ${
-            darkMode ? 'bg-indigo-900/20 text-indigo-300' : 'bg-indigo-50 text-indigo-700'
-          }`}>
+          <div className={`mt-2 p-2 rounded-lg text-center ${darkMode ? 'bg-red-900/20 text-red-300' : 'bg-red-50 text-red-700'
+            }`}>
             <p className="text-sm flex items-center justify-center">
               <span className="relative flex h-3 w-3 mr-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>

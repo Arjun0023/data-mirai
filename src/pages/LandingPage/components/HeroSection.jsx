@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.2 } }, 
+  visible: { opacity: 1, transition: { staggerChildren: 0.2 } },
 };
 
 const fadeInUp = {
@@ -67,7 +67,7 @@ const HeroSection = () => {
           className="mt-6 flex flex-col sm:flex-row gap-4 justify-center"
         >
           <a
-             onClick={handleGetStartedClick}
+            onClick={handleGetStartedClick}
             className="border inline-block bg-gray-300 hover:bg-black hover:text-amber-50 text-black py-3 px-6 rounded-lg font-medium transition duration-200"
           >
             {HERO_CONTENT.callToAction.primary}

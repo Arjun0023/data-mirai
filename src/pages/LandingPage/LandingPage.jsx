@@ -6,17 +6,17 @@ import Navbar from "./components/Navbar"
 import PricingPlans from "./components/PricingPlans"
 import Testimonials from "./components/Testimonials"
 
-const LandingPage =() => {
+const LandingPage = () => {
   return (
-    <main className="text-sm text-neutral-300 antialiased">
+    <main className="text-sm text-neutral-300 antialiased" style={{ backgroundColor: 'var(--bg-landing)' }}>
       <Navbar />
       <HeroSection />
       <HowItWorks />
       <KeyFeatures />
       {/* <PricingPlans />
       <Testimonials />*/}
-      <Footer /> 
-      </main>
+      <Footer />
+    </main>
   )
 }
 

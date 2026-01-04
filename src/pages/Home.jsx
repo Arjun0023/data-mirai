@@ -1,28 +1,50 @@
-// Home.js
-import React, { useState, useCallback } from 'react';
-import { Upload } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // Import for navigation
-import InputArea from '../components/input/InputArea'; // Import the new InputArea component
-import FileInfoDisplay from '../components/containers/uploaded';
+import React, { useState, useCallback, useEffect } from 'react';
+import { Upload, Mic, Send, Plus, FileText, Languages } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/navbar/Navbar';
-import useData from '../components/data/useData'; // Import the hook
+import FileInfoDisplay from '../components/containers/uploaded';
+import { useTheme } from '../context/ThemeContext';
+import useData from '../components/data/useData';
+
+const VOICE_LANGUAGE_OPTIONS = [
+  { code: 'en-IN', name: 'Hinglish' },
+  { code: 'en-US', name: 'English' },
+  { code: 'hi-IN', name: 'Hindi' },
+  { code: 'mr-IN', name: 'Marathi' },
+  { code: 'ta-IN', name: 'Tamil' },
+  { code: 'te-IN', name: 'Telugu' },
+  { code: 'kn-IN', name: 'Kannada' }
+];
 
 function Home() {
   const navigate = useNavigate();
-  const { uploadedFileData, setUploadedFileData, messages, setMessages, allResults, setAllResults, languageOptions, setLanguageOptions,savedCharts, setSavedCharts, displayMode, setDisplayMode  } = useData(); // Use the context
-  const [darkMode, setDarkMode] = useState(false);
+  const {
+    uploadedFileData,
+    setUploadedFileData,
+    messages,
+    setMessages,
+    allResults,
+    setAllResults,
+    languageOptions,
+    setLanguageOptions,
+    savedCharts,
+    setSavedCharts,
+    displayMode,
+    setDisplayMode
+  } = useData();
+
+  // Use centralized theme
+  const { darkMode, toggleDarkMode } = useTheme();
+
   const [message, setMessage] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [inputDisabled, setInputDisabled] = useState(true);
+  const [showFileInfo, setShowFileInfo] = useState(false);
+  const [recognitionLanguage, setRecognitionLanguage] = useState('en-US');
+  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
 
 
-
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
 
   const handleFileChange = async (e) => {
     if (e.target.files[0]) {
@@ -42,7 +64,7 @@ function Home() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('session_id', 'session123'); // Add session_id
+      formData.append('session_id', 'session123');
 
       const response = await fetch('http://127.0.0.1:8000/upload', {
         method: 'POST',
@@ -56,9 +78,8 @@ function Home() {
       const data = await response.json();
       console.log(data, "------");
       setUploadedFileData(data);
-      setInputDisabled(false);
+      setShowFileInfo(true);
 
-      // Add a system message showing the upload was successful
       const systemMessage = {
         id: Date.now(),
         text: `File uploaded successfully: ${file.name}`,
@@ -82,95 +103,15 @@ function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (message.trim()) {
-      const newMessage = {
-        id: Date.now(),
-        text: message,
-        sender: 'user',
-      };
 
-      setMessages([...messages, newMessage]);
-      setIsProcessing(true);
-
-      try {
-        // Create FormData object for the API call
-        const formData = new FormData();
-        formData.append('question', message);
-        formData.append('session_id', 'session123');
-        formData.append('language', languageOptions);
-
-        // Make the API call with FormData
-        const response = await fetch('http://127.0.0.1:8000/ask', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Query failed: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log('Query data:', data);
-        const formattedResult = {
-          original: data,
-          formatted: data.result
-        };
-
-        // Add AI response
-        const aiResponse = {
-          id: Date.now() + 1,
-          text: `I've analyzed your data for "${message}"`,
-          sender: 'ai',
-        };
-        setMessages(prevMessages => [...prevMessages, aiResponse]);
-
-        // Make the additional API call to /summarize
-        const summaryText = await fetchSummary(message, data.result);
-
-        // Create a new result object with all relevant data
-        const newResult = {
-          id: Date.now(),
-          question: message,
-          resultData: formattedResult,
-          summary: summaryText,
-          timestamp: new Date().toISOString(),
-          displayMode: displayMode // Store current display mode
-        };
-
-        // Add the new result to our results array
-        setAllResults(prevResults => [...prevResults, newResult]);
-        navigate('/ask'); // Navigate to /ask
-
-      } catch (error) {
-        console.error('Error processing query:', error);
-        const errorMessage = {
-          id: Date.now() + 1,
-          text: `Error processing your query: ${error.message}`,
-          sender: 'system',
-        };
-        setMessages(prevMessages => [...prevMessages, errorMessage]);
-      } finally {
-        setIsProcessing(false);
-        setMessage('');
-      }
+    if (message.trim() && uploadedFileData) {
+      // Navigate to Ask page where queries are handled
+      navigate('/ask');
     }
   };
 
-  const handleQuestionClick = (question) => {
-    setMessage(question);
-    // Use setTimeout to ensure the message is set before submitting
-    setTimeout(() => {
-      const event = { preventDefault: () => {} }; // Create a mock event
-      handleSubmit(event);
-    }, 10);
-  };
-
-
-
-  // New function to fetch summary
   const fetchSummary = async (question, resultData) => {
     try {
-      console.log(languageOptions, "a");
       const response = await fetch('http://127.0.0.1:8000/summarize', {
         method: 'POST',
         headers: {
@@ -197,28 +138,10 @@ function Home() {
     }
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
 
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = async (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-
-    if (e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      setSelectedFile(file);
-      await uploadFile(file);
-    }
-  };
 
   return (
-    <div className={`flex flex-col h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-800'}`}>
+    <div className={`flex flex-col h-screen transition-colors duration-300 ${darkMode ? 'bg-neutral-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
       {/* Header */}
       <Navbar
         darkMode={darkMode}
@@ -226,121 +149,189 @@ function Home() {
         savedCharts={savedCharts}
       />
 
-      {/* Chat Area */}
-      <main className={`flex-1 overflow-auto p-4 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <div className="max-w-8xl mx-auto">
-          {!uploadedFileData && messages.length === 0 ? (
-            <div className="text-center p-10">
-              <h2 className="text-2xl font-medium mb-6">How can I help you today?</h2>
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col overflow-hidden">
+        {isProcessing ? (
+          <div className="flex flex-col items-center justify-center py-10">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+            <p className="text-lg font-medium">Analyzing your data...</p>
+            <p className="text-sm mt-2 text-gray-400">This may take a moment</p>
+          </div>
+        ) : showFileInfo ? (
+          /* Full Screen File Info Display */
+          <div className="flex-1 overflow-hidden">
+            <FileInfoDisplay
+              uploadedFileData={uploadedFileData}
+              darkMode={darkMode}
+              onQuestionClick={(question) => setMessage(question)}
+            />
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center px-4">
+            <div className="w-full max-w-4xl text-center">
+              <h1 className={`text-4xl md:text-5xl font-normal mb-8 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                How can I analyse your data today?
+              </h1>
 
-              {/* File Upload UI */}
-              <div
-                className={`mx-auto mt-8 mb-12 max-w-xl border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200
-              ${darkMode
-                    ? isDragging
-                      ? 'border-indigo-500 bg-indigo-900/20'
-                      : 'border-gray-600 hover:border-gray-500'
-                    : isDragging
-                      ? 'border-indigo-500 bg-indigo-50'
-                      : 'border-gray-300 hover:border-gray-400'
-                  } ${isUploading ? 'opacity-60' : ''} shadow-md`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                {isUploading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto mb-4"></div>
-                    <h3 className="text-xl font-medium mb-3">Uploading...</h3>
-                  </>
-                ) : (
-                  <>
-                    <Upload size={48} className={`mx-auto mb-4 ${darkMode ? 'text-indigo-400' : 'text-indigo-500'}`} />
-                    <h3 className="text-xl font-medium mb-3">Upload your Excel or CSV file</h3>
-                    <p className={`text-base mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      Drag and drop file here
-                    </p>
-                    <p className={`text-sm mb-4 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                      Limit 200MB per file • XLSX, CSV
-                    </p>
-                    <label className={`px-6 py-3 rounded-lg cursor-pointer inline-block font-medium transition-colors
-                    ${darkMode
-                        ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20'
-                        : 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
-                      }`}
-                    >
-                      Browse Files
-                      <input
-                        type="file"
-                        className="hidden"
-                        onChange={handleFileChange}
-                        accept=".xlsx,.csv"
-                        disabled={isUploading}
-                      />
-                    </label>
-                  </>
-                )}
-              </div>
+              {/* Upload Button */}
+              {!uploadedFileData && (
+                <div className="mb-8">
+                  <label className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all transform shadow-lg ${isUploading
+                      ? 'bg-gray-500 cursor-not-allowed opacity-50'
+                      : 'bg-blue-600 hover:bg-blue-700 cursor-pointer hover:scale-105'
+                    } text-white`}>
+                    <Upload size={20} />
+                    <span>{isUploading ? 'Uploading...' : 'Upload File'}</span>
+                    <input
+                      type="file"
+                      onChange={handleFileChange}
+                      accept=".csv,.xlsx,.xls"
+                      className="hidden"
+                      disabled={isUploading}
+                    />
+                  </label>
+                </div>
+              )}
 
-              <p className={`text-base ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                and ask a question to get started
-              </p>
+              {/* File Upload Status */}
+              {uploadedFileData && (
+                <div className="mb-6">
+                  <button
+                    onClick={() => setShowFileInfo(!showFileInfo)}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg glass-effect hover:bg-opacity-60 transition-all"
+                  >
+                    <FileText size={16} className="text-blue-400" />
+                    <span className="text-sm text-gray-300">{selectedFile?.name || 'File uploaded'}</span>
+                    <span className="text-xs text-gray-500">Click to view details</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Helper Text */}
+              {!uploadedFileData && (
+                <p className={`mt-8 text-sm transition-colors duration-300 ${darkMode ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                  Upload an Excel or CSV file to get started with data analysis
+                </p>
+              )}
             </div>
-          ) : (
-            <div className="space-y-4 w-full">
-  {/* Show file info when data exists but not processing */}
-  {uploadedFileData && !isProcessing && (
-    <div className="transition-all duration-300 ease-in-out w-4/4 mx-auto">
-      <FileInfoDisplay
-        uploadedFileData={uploadedFileData}
-        darkMode={darkMode} 
-        onQuestionClick={handleQuestionClick}
-        />
-    </div>
-  )}
+          </div>
+        )}
 
-  {/* Show most recent query result summary if available */}
-  {/* {allResults.length > 0 && !isProcessing && (
-    <div className={`p-4 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-md`}>
-      <h3 className="font-medium mb-2">Last Query: {allResults[allResults.length-1].question}</h3>
-      <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
-        {allResults[allResults.length-1].summary}
-      </p>
-    </div>
-  )} */}
+        {/* Fixed Search Bar at Bottom - Always Visible */}
+        <div className={`flex-shrink-0 px-4 pb-4 ${darkMode ? 'bg-neutral-900' : 'bg-gray-50'}`}>
+          <div className="w-full max-w-4xl mx-auto">
+            {/* Main Input Area */}
+            <div className="relative">
+              <form onSubmit={handleSubmit} className="w-full">
+                <div
+                  className={`rounded-xl p-3 flex items-center gap-3 border transition-all duration-300 ${darkMode
+                    ? 'bg-neutral-800 border-neutral-700'
+                    : 'bg-white border-gray-200 shadow-sm'
+                    }`}
+                >
+                  {/* Language Selector Button */}
+                  <button
+                    type="button"
+                    onClick={() => setShowLanguageSelector(!showLanguageSelector)}
+                    disabled={isProcessing}
+                    className={`p-2 rounded-md transition-colors ${showLanguageSelector
+                      ? 'bg-blue-900/30 text-blue-400'
+                      : 'hover:bg-gray-700 text-gray-400 hover:text-gray-300'
+                      }`}
+                    title="Select language for voice input"
+                  >
+                    <Languages size={20} />
+                  </button>
 
-  {/* Loading spinner during processing */}
-  {isProcessing && (
-    <div className={`flex flex-col items-center justify-center py-10 rounded-xl shadow-lg ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}>
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mb-4"></div>
-      <p className="text-lg font-medium">Analyzing your data...</p>
-      <p className={`text-sm mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>This may take a moment</p>
-    </div>
-  )}
-</div>
-          )}
+                  {/* Text Input */}
+                  <input
+                    type="text"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder={uploadedFileData ? "Assign a task or ask anything" : "Upload a file to start..."}
+                    disabled={!uploadedFileData || isUploading}
+                    className={`flex-1 bg-transparent border-none outline-none text-base transition-colors duration-300 ${darkMode
+                      ? 'text-white placeholder-neutral-500'
+                      : 'text-neutral-900 placeholder-neutral-400'
+                      }`}
+                  />
+
+                  {/* Voice Input Button */}
+                  <button
+                    type="button"
+                    disabled
+                    className="p-2 rounded-md hover:bg-gray-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    title="Voice input (coming soon)"
+                  >
+                    <Mic size={20} className="text-gray-400" />
+                  </button>
+
+                  {/* Send Button */}
+                  <button
+                    type="submit"
+                    disabled={!message.trim() || isProcessing}
+                    className={`p-2.5 rounded-full transition-colors ${message.trim() && !isProcessing
+                      ? 'bg-gray-600 hover:bg-gray-500'
+                      : 'bg-gray-700 opacity-50 cursor-not-allowed'
+                      }`}
+                  >
+                    <Send size={16} className="text-gray-300" />
+                  </button>
+                </div>
+              </form>
+
+              {/* Upload Status Indicator */}
+              {isUploading && (
+                <div className="absolute -bottom-8 left-0 right-0 text-center">
+                  <p className="text-sm text-gray-400">Uploading file...</p>
+                </div>
+              )}
+            </div>
+
+            {/* Language Selector Dropdown */}
+            {showLanguageSelector && (
+              <div
+                className={`mt-3 p-3 rounded-xl border transition-all duration-300 ${darkMode
+                  ? 'bg-neutral-800 border-neutral-700'
+                  : 'bg-white border-gray-200 shadow-sm'
+                  }`}
+              >
+                <p className={`text-xs mb-2 ${darkMode ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                  Select voice recognition language:
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {VOICE_LANGUAGE_OPTIONS && VOICE_LANGUAGE_OPTIONS.length > 0 ? (
+                    VOICE_LANGUAGE_OPTIONS.map((lang) => {
+                      const isSelected = recognitionLanguage === lang.code;
+                      return (
+                        <button
+                          key={lang.code}
+                          type="button"
+                          onClick={() => {
+                            setRecognitionLanguage(lang.code);
+                            setShowLanguageSelector(false);
+                            handleLanguageOptions(lang.code);
+                          }}
+                          className={
+                            isSelected
+                              ? 'px-3 py-2 text-sm rounded-lg text-left transition-colors bg-blue-900/30 text-blue-300 border border-blue-800'
+                              : 'px-3 py-2 text-sm rounded-lg text-left transition-colors hover:bg-gray-700 text-gray-300'
+                          }
+                        >
+                          {lang.name}
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <p className="text-gray-400 text-sm">No languages available</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </main>
-
-      {/* Input Area */}
-      <InputArea
-        darkMode={darkMode}
-        message={message}
-        setMessage={setMessage}
-        inputDisabled={inputDisabled}
-        isProcessing={isProcessing}
-        handleSubmit={handleSubmit}
-        handleFileChange={handleFileChange}
-        uploadedFileData={uploadedFileData}
-        isUploading={isUploading}
-        onLanguageOptions={handleLanguageOptions}
-        customClasses={{
-          container: `${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} shadow-lg`,
-          input: `${darkMode ? 'bg-gray-700 border-gray-600 focus:border-indigo-500' : 'bg-gray-50 border-gray-300 focus:border-indigo-500'} focus:ring-2 focus:ring-indigo-500/20`,
-          button: `${darkMode ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-500 hover:bg-indigo-600'} shadow-md`
-        }}
-      />
-    </div>
+      </main >
+    </div >
   );
 }
 

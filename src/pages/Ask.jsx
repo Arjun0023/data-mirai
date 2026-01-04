@@ -38,7 +38,7 @@ const ResultItem = React.memo(({ result, displayMode, darkMode, saveChartToDashb
     const isChartSaved = (resultId) => {
         return savedCharts.some(chart => chart.originalId === resultId);
     };
-    
+
     // Determine if this chart is already saved
     const isSaved = isChartSaved(result.id);
 
@@ -254,7 +254,7 @@ const Ask = () => {
     const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
 
-        if (message.trim()&& uploadedFileData) {
+        if (message.trim() && uploadedFileData) {
             setIsProcessing(true);
 
             try {
@@ -301,7 +301,7 @@ const Ask = () => {
                 setAllResults(prevResults => [...prevResults, newResult]);
 
                 // No need to navigate, just stay on the page
-                
+
             } catch (error) {
                 console.error('Error processing query:', error);
                 // Handle error as needed
@@ -352,7 +352,7 @@ const Ask = () => {
     }), [darkMode, message, inputDisabled, isProcessing, handleSubmit, handleFileChange, uploadedFileData, isUploading, handleLanguageOptions]);
 
     return (
-        <div className={`flex flex-col h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-800'}`}>
+        <div className={`flex flex-col h-screen transition-colors duration-300 ${darkMode ? 'bg-neutral-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
             <Navbar
                 darkMode={darkMode}
                 toggleDarkMode={toggleDarkMode}
@@ -365,7 +365,7 @@ const Ask = () => {
             <main className="flex-1 overflow-auto p-4">
                 <div className="max-w-8xl mx-auto space-y-4">
                     {allResults.map((result) => (
-                        <ResultItem 
+                        <ResultItem
                             key={result.id}
                             result={result}
                             displayMode={displayMode}
